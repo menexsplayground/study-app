@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp Universal</title>
+  <title>StudyApp v13.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">PC & iPad Ready</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">v13.0 Aktivní</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60">☁️ Cloud</span>
@@ -31,7 +31,7 @@
 
   <script>
     const CONFIG = { owner: 'menexsplayground', repo: 'study-app', dataFile: 'data.json' };
-    const HARDCODED_GEMINI_KEY = 'AQ.Ab8RN6JCSCafUO5PrDbX3yJEPSqaZ1pEO62gn_rB1xAXykVflw';
+    const HARDCODED_GEMINI_KEY = 'AQ.Ab8RN6KwYjZnwsTOrml89DzRmInR2hl2_qLBif1W4-HmwUYhAQ';
     const HARDCODED_GH_TOKEN = atob('Z2hwX1diZ1AzaHVTb0hyd3J6bDBnZ2FaVmI3Y1ZTQUFuRjNLblJZdA==');
     const CASCADE_MODELS = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-3.8-flash'];
 
@@ -50,8 +50,8 @@
     }
 
     const state = {
-      apiKey: (localStorage.getItem('gemini_key') || HARDCODED_GEMINI_KEY).trim(),
-      ghToken: (localStorage.getItem('github_token') || HARDCODED_GH_TOKEN).trim(),
+      apiKey: HARDCODED_GEMINI_KEY,
+      ghToken: HARDCODED_GH_TOKEN,
       ghSha: localStorage.getItem('github_data_sha') || null,
       subjects: loadCleanSubjects(),
       selectedTopics: [],
@@ -171,7 +171,7 @@
           <p class="text-slate-400 text-xs mt-1">
             <span id="statsSubCount" class="text-blue-400 font-bold">${state.subjects.length} sešitů</span>, 
             <span class="text-blue-400 font-bold">${getTotalTopicsCount()} kapitol</span>
-            • <span class="text-emerald-400 font-semibold">Cloud aktivní ☁️</span>
+            • <span class="text-emerald-400 font-semibold">Klíč aktivní ✅</span>
           </p>
         </div>
         <div class="grid gap-4 mt-8">
@@ -185,7 +185,7 @@
           </button>
           <button onclick="nav('vkladani')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
             <span class="text-4xl">📥</span>
-            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI pozná nadpisy.</p></div>
+            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky – AI pozná nadpisy.</p></div>
           </button>
         </div>
       `;
@@ -199,7 +199,7 @@
           <div class="text-center py-12">
             <span class="text-4xl">📂</span>
             <p class="text-slate-300 font-bold mt-3 mb-2">V tomto zařízení zatím nejsou sešity</p>
-            <p class="text-xs text-slate-400 mb-5">Pokud jsi je uložil na jiném zařízení, jdi do Nastavení ⚙️ a klikni na "Stáhnout z cloudu".</p>
+            <p class="text-xs text-slate-400 mb-5">Pokud jsi je uložil jinde, jdi do Nastavení ⚙️ a klikni na "Stáhnout z cloudu".</p>
             <button onclick="nav('vkladani')" class="px-5 py-3 rounded-xl bg-emerald-600 font-bold text-sm">Vložit nový sešit</button>
           </div>
         `;
@@ -312,9 +312,9 @@
       `;
     }
 
-    // --- ČISTÉ A BEZCHYBNÉ VOLÁNÍ GEMINI API ---
+    // --- BEZCHYBNÉ VOLÁNÍ S TVÝM NOVÝM KLÍČEM ---
     async function executeGeminiWithFallback(payload) {
-      const key = (state.apiKey || HARDCODED_GEMINI_KEY).trim();
+      const key = state.apiKey.trim();
       let lastErr = null;
 
       for (const model of CASCADE_MODELS) {
