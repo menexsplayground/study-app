@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp AI</title>
+  <title>StudyApp v3.2</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,9 +22,12 @@
 
   <!-- TOP BAR -->
   <header class="p-4 pt-10 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/90 backdrop-blur-md sticky top-0 z-50">
-    <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
-      <span>🧠</span> StudyApp
-    </button>
+    <div class="flex items-center gap-2">
+      <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
+        <span>🧠</span> StudyApp
+      </button>
+      <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 font-bold border border-blue-800">v3.2</span>
+    </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
         <span>💾</span> Lokální
@@ -45,11 +48,27 @@
       dataFile: 'data.json'
     };
 
+    function loadCleanSubjects() {
+      try {
+        const raw = localStorage.getItem('study_data');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(s => s && typeof s === 'object' && s.name).map(s => ({
+          id: s.id || ('sub_' + Date.now()),
+          name: String(s.name).trim(),
+          topics: Array.isArray(s.topics) ? s.topics.filter(t => t && (t.title || t.content)) : []
+        }));
+      } catch (e) {
+        return [];
+      }
+    }
+
     const state = {
       apiKey: (localStorage.getItem('gemini_key') || '').trim(),
       ghToken: (localStorage.getItem('github_token') || '').trim(),
       ghSha: localStorage.getItem('github_data_sha') || null,
-      subjects: JSON.parse(localStorage.getItem('study_data') || '[]'),
+      subjects: loadCleanSubjects(),
       selectedTopics: [],
       currentMode: null,
       chatHistory: [],
@@ -86,10 +105,13 @@
           state.ghSha = data.sha;
           localStorage.setItem('github_data_sha', data.sha);
           const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-          state.subjects = JSON.parse(decoded);
-          localStorage.setItem('study_data', JSON.stringify(state.subjects));
-          setCloudStatus('synced', 'Synchronizováno');
-          if (document.getElementById('statsSubCount')) renderHome();
+          const list = JSON.parse(decoded);
+          if (Array.isArray(list)) {
+            state.subjects = list;
+            localStorage.setItem('study_data', JSON.stringify(state.subjects));
+            setCloudStatus('synced', 'Synchronizováno');
+            if (document.getElementById('statsSubCount')) renderHome();
+          }
         } else if (res.status === 404) {
           setCloudStatus('synced', 'Nový cloud');
         }
@@ -142,7 +164,7 @@
     }
 
     function getTotalTopicsCount() {
-      return state.subjects.reduce((sum, s) => sum + (s.topics ? s.topics.length : 0), 0);
+      return state.subjects.reduce((sum, s) => sum + (s && s.topics ? s.topics.length : 0), 0);
     }
 
     function nav(screen, param = null) {
@@ -205,7 +227,7 @@
             <span class="text-4xl">📥</span>
             <div>
               <h2 class="text-xl font-bold text-emerald-400">Vložit celý sešit</h2>
-              <p class="text-slate-400 text-xs mt-0.5">Nahraj fotky nebo Apple Notes a AI je sama rozseká na kapitoly.</p>
+              <p class="text-slate-400 text-xs mt-0.5">Vlož text nebo fotky – AI sama pozná nadpisy a rozdělí látku.</p>
             </div>
           </button>
         </div>
@@ -231,16 +253,17 @@
 
       let subjectsHtml = '';
       state.subjects.forEach(sub => {
-        if (!sub.topics || sub.topics.length === 0) return;
+        if (!sub || !sub.topics || sub.topics.length === 0) return;
         let topicsHtml = '';
         sub.topics.forEach(top => {
-          const isChecked = state.selectedTopics.some(t => t.id === top.id) ? 'checked' : '';
+          if (!top) return;
+          const isChecked = state.selectedTopics.some(t => t && t.id === top.id) ? 'checked' : '';
           topicsHtml += `
             <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer active:bg-slate-700">
               <input type="checkbox" value="${top.id}" data-sub="${sub.id}" class="w-5 h-5 accent-blue-500 rounded topic-cb" ${isChecked}>
               <div class="flex-1">
-                <span class="text-sm font-semibold text-slate-100 block">📌 ${top.title}</span>
-                <span class="text-[10px] text-slate-400 line-clamp-1">${top.content.substring(0, 65)}...</span>
+                <span class="text-sm font-semibold text-slate-100 block">📌 ${top.title || 'Téma'}</span>
+                <span class="text-[10px] text-slate-400 line-clamp-1">${(top.content || '').substring(0, 65)}...</span>
               </div>
             </label>
           `;
@@ -259,9 +282,7 @@
 
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <div class="flex justify-between items-baseline mb-1">
-          <h2 class="text-2xl font-black">Vyber témata / nadpisy</h2>
-        </div>
+        <h2 class="text-2xl font-black mb-1">Vyber témata / nadpisy</h2>
         <p class="text-slate-400 text-xs mb-5">Zaškrtni úseky látky, ze kterých ${targetMode === 'uceni' ? 'se chceš učit' : 'chceš být zkoušen'}.</p>
         
         <div>${subjectsHtml}</div>
@@ -291,8 +312,8 @@
       checkedBoxes.forEach(cb => {
         const subId = cb.getAttribute('data-sub');
         const topId = cb.value;
-        const sub = state.subjects.find(s => s.id === subId);
-        const top = sub ? sub.topics.find(t => t.id === topId) : null;
+        const sub = state.subjects.find(s => s && s.id === subId);
+        const top = sub && sub.topics ? sub.topics.find(t => t && t.id === topId) : null;
         if (top) state.selectedTopics.push(top);
       });
 
@@ -301,7 +322,7 @@
     }
 
     function getCombinedNotes() {
-      return state.selectedTopics.map(t => `### ${t.title}\n${t.content}`).join('\n\n');
+      return state.selectedTopics.map(t => `### ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
     // --- 3. REŽIMY UČENÍ ---
@@ -389,6 +410,7 @@
             <input id="inputSubName" type="text" placeholder="Zadej název předmětu (např. Dějepis)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 ${state.subjects.length > 0 ? 'hidden' : ''}">
           </div>
 
+          <!-- MOŽNOST A: FOTKY -->
           <div class="pt-3 border-t border-slate-800">
             <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Možnost A: Vybrat fotky celého sešitu</label>
             <p class="text-[11px] text-slate-400 mb-2">Můžeš označit i 10–20 fotek najednou v galerii!</p>
@@ -400,6 +422,7 @@
             </label>
           </div>
 
+          <!-- MOŽNOST B: APPLE NOTES -->
           <div class="pt-3 border-t border-slate-800">
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit celý sešit z Apple Notes</label>
             <p class="text-[11px] text-slate-400 mb-2">V poznámkách dej "Vybrat vše", zkopíruj a vlož sem celý sešit najednou.</p>
@@ -416,11 +439,13 @@
 
     function toggleCustomSub(selectEl) {
       const input = document.getElementById('inputSubName');
-      if (selectEl.value === '__NEW__') {
-        input.classList.remove('hidden');
-        input.focus();
-      } else {
-        input.classList.add('hidden');
+      if (selectEl && input) {
+        if (selectEl.value === '__NEW__') {
+          input.classList.remove('hidden');
+          input.focus();
+        } else {
+          input.classList.add('hidden');
+        }
       }
     }
 
@@ -430,14 +455,17 @@
       if (select && select.value && select.value !== '__NEW__') {
         return select.value.trim();
       }
-      return input ? input.value.trim() : '';
+      if (input && input.value) {
+        return input.value.trim();
+      }
+      return '';
     }
 
-    // --- ROBUSTNÍ VOLÁNÍ GEMINI API S KONTROLOU CHYB ---
+    // --- BEZPEČNÉ VOLÁNÍ GEMINI API ---
     async function callGemini(systemPrompt, userPrompt, isJson = false) {
       const key = (state.apiKey || '').trim();
       if (!key) {
-        throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
+        throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ vpravo nahoře a vlož ho.');
       }
 
       const bodyPayload = {
@@ -450,61 +478,96 @@
         bodyPayload.generationConfig.response_mime_type = "application/json";
       }
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyPayload)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        const errMsg = data.error?.message || `Chyba serveru (${res.status})`;
-        throw new Error(`Google API: ${errMsg}`);
+      let res;
+      try {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload)
+        });
+      } catch (e) {
+        throw new Error('Chyba připojení k internetu nebo Google API.');
       }
 
-      if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-        throw new Error('Gemini nevrátil žádný text (možná bezpečnostní filtr). Zkus zkrátit zadání.');
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error(`Google API nevrátilo JSON (status: ${res.status})`);
+      }
+
+      if (!res.ok || (data && data.error)) {
+        const msg = (data && data.error && data.error.message) ? data.error.message : `Chyba API (${res.status})`;
+        throw new Error(`Google API: ${msg}`);
+      }
+
+      if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
+        throw new Error('Gemini nevrátil žádný text.');
       }
 
       return data.candidates[0].content.parts[0].text;
     }
 
-    // --- ZPRACOVÁNÍ CELÉHO TEXTU SEŠITU ---
+    // Pomocná funkce pro bezpečné rozparsování odpovědi od AI
+    function extractTopicsListFromRawJson(rawText) {
+      let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      let parsed = JSON.parse(cleaned);
+
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (parsed && typeof parsed === 'object') {
+        for (let k of Object.keys(parsed)) {
+          if (Array.isArray(parsed[k])) {
+            return parsed[k];
+          }
+        }
+        if (parsed.title || parsed.content) {
+          return [parsed];
+        }
+      }
+      return [];
+    }
+
+    // --- ZPRACOVÁNÍ TEXTU Z APPLE NOTES ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
-      const fullText = document.getElementById('inputTextFull').value.trim();
+      const textArea = document.getElementById('inputTextFull');
+      const fullText = textArea ? textArea.value.trim() : '';
 
-      if (!subName) { alert('Nejprve nahoře zadej nebo vyber předmět!'); return; }
+      if (!subName) { alert('Nejprve nahoře zadej nebo vyber předmět (např. Dějepis)!'); return; }
       if (!fullText) { alert('Vlož text sešitu!'); return; }
 
       const btn = document.getElementById('saveTextBtn');
-      btn.innerText = '⏳ AI čte sešit a dělí ho podle nadpisů...';
-      btn.disabled = true;
+      if (btn) {
+        btn.innerText = '⏳ AI čte sešit a dělí ho podle nadpisů...';
+        btn.disabled = true;
+      }
 
       const systemPrompt = "Jsi asistent pro analýzu školních sešitů. Tvým úkolem je projít celý sešit, najít všechny hlavní nadpisy a rozdělit látku na logické úseky (témata) od nadpisu k nadpisu. Vrať VÝHRADNĚ validní JSON pole objektů s klíči 'title' (název nadpisu) a 'content' (veškerý text a poznámky patřící pod tento nadpis). Příklad: [{\"title\":\"1. Nadpis\",\"content\":\"text...\"}]";
       const userPrompt = `Zde je kompletní sešit předmětu ${subName}:\n\n${fullText}`;
 
       try {
         let raw = await callGemini(systemPrompt, userPrompt, true);
-        raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedTopics = JSON.parse(raw);
+        const parsedTopics = extractTopicsListFromRawJson(raw);
 
-        if (!Array.isArray(parsedTopics) || parsedTopics.length === 0) {
-          throw new Error('Nepodařilo se rozpoznat žádná témata. Zkontroluj, zda text obsahuje nadpisy.');
+        if (!parsedTopics || parsedTopics.length === 0) {
+          throw new Error('AI nenašla v textu žádné nadpisy. Zkus v textu zvýraznit nadpisy.');
         }
 
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
-        alert('Chyba při zpracování: ' + err.message);
-        btn.innerText = '🚀 Nechat AI rozdělit sešit na témata';
-        btn.disabled = false;
+        alert('Chyba při zpracování: ' + (err.message || err));
+        if (btn) {
+          btn.innerText = '🚀 Nechat AI rozdělit sešit na témata';
+          btn.disabled = false;
+        }
       }
     }
 
-    // --- HROMADNÉ ZPRACOVÁNÍ FOTEK ---
+    // --- HROMADNÉ FOTKY ---
     async function handleMultipleImages(input) {
-      if (!input.files || input.files.length === 0) return;
+      if (!input || !input.files || input.files.length === 0) return;
       const subName = getResolvedSubjectName();
 
       if (!subName) {
@@ -525,7 +588,7 @@
         <div class="text-center py-20">
           <div class="animate-spin text-4xl mb-4">🌀</div>
           <h2 class="text-xl font-bold mb-1">AI čte celý sešit (${count} fotek)...</h2>
-          <p class="text-xs text-slate-400">Gemini přepisuje rukopis, hledá nadpisy a rozděluje sešit na témata.</p>
+          <p class="text-xs text-slate-400">Gemini přepisuje rukopis, hledá nadpisy a dělí sešit na kapitoly.</p>
         </div>
       `;
 
@@ -541,34 +604,28 @@
 
         const promptText = `Toto jsou stránky celého školního sešitu pro předmět ${subName}. 
 Přečti veškeré poznámky, najdi hlavní nadpisy kapitol a rozděl látku na jednotlivá témata (úseky od nadpisu k nadpisu).
-Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název nadpisu) a 'content' (přepsaný text látky v odrážkách).`;
+Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název nadpisu) a 'content' (přepsaný text látky).`;
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{
-              parts: [{ text: promptText }, ...fileParts]
-            }],
-            generationConfig: { 
-              temperature: 0.2,
-              response_mime_type: "application/json"
-            }
+            contents: [{ parts: [{ text: promptText }, ...fileParts] }],
+            generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
           })
         });
 
         const data = await res.json();
-        if (!res.ok || data.error) {
-          throw new Error(data.error?.message || `Chyba API (${res.status})`);
+        if (!res.ok || (data && data.error)) {
+          throw new Error(data && data.error ? data.error.message : `Chyba API (${res.status})`);
         }
 
         let raw = data.candidates[0].content.parts[0].text;
-        raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedTopics = JSON.parse(raw);
+        const parsedTopics = extractTopicsListFromRawJson(raw);
 
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
-        alert('Chyba při čtení fotek: ' + err.message);
+        alert('Chyba při čtení fotek: ' + (err.message || err));
         nav('vkladani');
       }
     }
@@ -583,23 +640,27 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
     }
 
     async function saveExtractedTopics(subjectName, topicsList) {
-      let sub = state.subjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase());
+      const cleanSubName = String(subjectName || 'Neznámý předmět').trim();
+
+      let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === cleanSubName.toLowerCase());
       if (!sub) {
-        sub = { id: 'sub_' + Date.now(), name: subjectName, topics: [] };
+        sub = { id: 'sub_' + Date.now(), name: cleanSubName, topics: [] };
         state.subjects.push(sub);
       }
-      if (!sub.topics) sub.topics = [];
+      if (!Array.isArray(sub.topics)) sub.topics = [];
 
       topicsList.forEach(t => {
-        sub.topics.push({
-          id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-          title: t.title,
-          content: t.content
-        });
+        if (t && (t.title || t.content)) {
+          sub.topics.push({
+            id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            title: String(t.title || 'Kapitola').trim(),
+            content: String(t.content || '').trim()
+          });
+        }
       });
 
       await pushToCloud();
-      alert(`🎉 Hotovo! Sešit byl úspěšně rozdělen na ${topicsList.length} kapitol podle nadpisů.`);
+      alert(`🎉 Hotovo! Sešit "${cleanSubName}" byl rozdělen na ${topicsList.length} kapitol podle nadpisů.`);
       nav('home');
     }
 
@@ -637,8 +698,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
 
       try {
         let raw = await callGemini(sys, user, true);
-        raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-        const cards = JSON.parse(raw);
+        const cards = extractTopicsListFromRawJson(raw);
         nav('flashcards', cards);
       } catch(e) {
         alert('Chyba při tvorbě kartiček: ' + e.message);
@@ -651,7 +711,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       let flipped = false;
 
       function draw() {
-        const c = cards[cur];
+        const c = cards[cur] || { q: 'Žádná otázka', a: 'Žádná odpověď' };
         document.getElementById('app').innerHTML = `
           <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
           <div class="flex justify-between items-center mb-4">
@@ -659,7 +719,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
           </div>
           <div id="cardBox" onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
             <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
-            <p class="text-lg font-semibold text-slate-100">${flipped ? c.a : c.q}</p>
+            <p class="text-lg font-semibold text-slate-100">${flipped ? (c.a || c.odpoved) : (c.q || c.otazka)}</p>
           </div>
           <div class="flex gap-3 mt-6">
             <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
@@ -830,7 +890,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
           <div class="space-y-1">
             ${(sub.topics || []).map(t => `
               <div class="flex justify-between text-xs p-2 bg-slate-800 rounded">
-                <span>📌 ${t.title}</span>
+                <span>📌 ${t.title || 'Kapitola'}</span>
                 <button onclick="deleteTopic('${sub.id}', '${t.id}')" class="text-red-400">Odstranit</button>
               </div>
             `).join('')}
@@ -847,16 +907,16 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
 
     async function deleteSubject(id) {
       if (confirm('Opravdu smazat celý sešit se všemi kapitolami?')) {
-        state.subjects = state.subjects.filter(s => s.id !== id);
+        state.subjects = state.subjects.filter(s => s && s.id !== id);
         await pushToCloud();
         renderManageSubjects();
       }
     }
 
     async function deleteTopic(subId, topId) {
-      const sub = state.subjects.find(s => s.id === subId);
-      if (sub && sub.topics) {
-        sub.topics = sub.topics.filter(t => t.id !== topId);
+      const sub = state.subjects.find(s => s && s.id === subId);
+      if (sub && Array.isArray(sub.topics)) {
+        sub.topics = sub.topics.filter(t => t && t.id !== topId);
         await pushToCloud();
         renderManageSubjects();
       }
@@ -867,7 +927,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud.</p>
+        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v3.2).</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
@@ -881,10 +941,23 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
           <input id="ghTokenInput" type="password" value="${state.ghToken}" placeholder="ghp_..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
         </div>
 
-        <button onclick="saveAllSettings()" class="w-full py-3.5 bg-blue-600 font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30 active:scale-98 transition">
+        <button onclick="saveAllSettings()" class="w-full py-3.5 bg-blue-600 font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30 active:scale-98 transition mb-3">
           💾 Uložit nastavení
         </button>
+
+        <button onclick="clearCorruptedData()" class="w-full py-2.5 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
+          🧹 Vyčistit poškozená data z paměti
+        </button>
       `;
+    }
+
+    function clearCorruptedData() {
+      if (confirm('Chceš vyčistit mezipaměť témat v tomto zařízení?')) {
+        localStorage.removeItem('study_data');
+        state.subjects = [];
+        alert('Paměť vyčištěna!');
+        nav('home');
+      }
     }
 
     async function saveAllSettings() {
