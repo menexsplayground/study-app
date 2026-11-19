@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v5.0</title>
+  <title>StudyApp v6.0 (Gemini 3.8)</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40">v5.0 DIAGNOSTIC</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40">v6.0 (3.8 Flash)</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
@@ -45,7 +45,8 @@
     const CONFIG = {
       owner: 'menexsplayground',
       repo: 'study-app',
-      dataFile: 'data.json'
+      dataFile: 'data.json',
+      modelName: 'gemini-3.8-flash'
     };
 
     function loadCleanSubjects() {
@@ -112,6 +113,8 @@
             setCloudStatus('synced', 'Synchronizováno');
             if (document.getElementById('statsSubCount')) renderHome();
           }
+        } else if (res.status === 404) {
+          setCloudStatus('synced', 'Nový cloud');
         }
       } catch (err) {
         setCloudStatus('error', 'Chyba cloudu');
@@ -148,6 +151,8 @@
           state.ghSha = resData.content.sha;
           localStorage.setItem('github_data_sha', state.ghSha);
           setCloudStatus('synced', 'Uloženo na web');
+        } else {
+          setCloudStatus('error', 'Chyba ukládání');
         }
       } catch (err) {
         setCloudStatus('error', 'Offline');
@@ -427,13 +432,12 @@
       return '';
     }
 
-    // --- PŘÍMÉ, ČISTÉ VOLÁNÍ GEMINI 2.0 FLASH (BEZ ZÁKEŘNÉHO FALLBACKU NA 1.5) ---
+    // --- PŘÍMÉ VOLÁNÍ GEMINI 3.8 FLASH ---
     async function executeGeminiDirect(payload) {
       const key = (state.apiKey || '').trim();
       if (!key) throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
 
-      // Voláme striktně ověřený model gemini-2.0-flash
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.modelName}:generateContent?key=${key}`;
       
       const res = await fetch(url, {
         method: 'POST',
@@ -861,7 +865,7 @@
       }
     }
 
-    // --- NASTAVENÍ S DIAGNOSTIKOU A TESTEM KLÍČE ---
+    // --- NASTAVENÍ A TESTOVÁNÍ GEMINI 3.8 FLASH ---
     function renderSettings(msg = '') {
       const app = document.getElementById('app');
       const maskedKey = state.apiKey ? `${state.apiKey.substring(0, 7)}...${state.apiKey.substring(state.apiKey.length - 4)}` : 'Nezadáno';
@@ -869,19 +873,19 @@
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Verze v5.0 DIAGNOSTIC</p>
+        <p class="text-xs text-slate-400 mb-4">Verze v6.0 (Gemini 3.8 Flash)</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-4">
           <div class="flex justify-between items-center">
             <label class="block text-xs font-bold text-slate-400 uppercase">1. Gemini API Klíč</label>
-            <span class="text-[10px] text-slate-400">Aktuálně v paměti: <b class="text-slate-200">${maskedKey}</b></span>
+            <span class="text-[10px] text-slate-400">V paměti: <b class="text-slate-200">${maskedKey}</b></span>
           </div>
           <input id="keyInput" type="text" value="${state.apiKey}" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 font-mono">
           
-          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-purple-600/30 border border-purple-500 text-purple-300 font-bold rounded-lg text-xs active:scale-98 transition">
-            🔌 Otestovat API klíč proti serverům Googlu
+          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-emerald-600/30 border border-emerald-500 text-emerald-300 font-bold rounded-lg text-xs active:scale-98 transition">
+            🔌 Otestovat klíč na Gemini 3.8 Flash
           </button>
           <div id="testKeyResult" class="text-xs font-medium mt-1"></div>
         </div>
@@ -896,7 +900,7 @@
         </button>
 
         <button onclick="clearCorruptedData()" class="w-full py-2 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
-          🧹 Smazat uložená témata a začít znovu
+          🧹 Smazat data a začít znovu
         </button>
       `;
     }
@@ -905,14 +909,14 @@
       const resDiv = document.getElementById('testKeyResult');
       const key = (document.getElementById('keyInput').value || '').trim();
       if (!key) {
-        resDiv.innerHTML = '<span class="text-red-400">❌ Vyplň klíč do políčka výše!</span>';
+        resDiv.innerHTML = '<span class="text-red-400">❌ Vyplň klíč do políčka!</span>';
         return;
       }
 
-      resDiv.innerHTML = '<span class="text-blue-400">⏳ Odesílám testovací dotaz na Google Gemini 2.0 Flash...</span>';
+      resDiv.innerHTML = '<span class="text-blue-400">⏳ Testuji spojení s modelem Gemini 3.8 Flash...</span>';
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -923,10 +927,10 @@
         const data = await res.json();
 
         if (res.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-          resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE! Google odpověděl: "${data.candidates[0].content.parts[0].text.trim()}"</span>`;
+          resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE! Gemini 3.8 Flash odpověděl: "${data.candidates[0].content.parts[0].text.trim()}"</span>`;
         } else {
           const errMsg = data.error ? data.error.message : JSON.stringify(data);
-          resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Google odmítl požadavek:</span><br><span class="text-red-300 text-[11px]">${errMsg}</span>`;
+          resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Google chyba: ${errMsg}</span>`;
         }
       } catch (err) {
         resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba sítě: ${err.message}</span>`;
@@ -934,7 +938,7 @@
     }
 
     function clearCorruptedData() {
-      if (confirm('Chceš vyčistit mezipaměť témat v tomto zařízení?')) {
+      if (confirm('Chceš vyčistit data?')) {
         localStorage.removeItem('study_data');
         state.subjects = [];
         alert('Paměť vyčištěna!');
