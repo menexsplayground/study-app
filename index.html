@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v6.0 (Gemini 3.8)</title>
+  <title>StudyApp v7.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40">v6.0 (3.8 Flash)</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40">v7.0 SmartCascade</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
@@ -45,9 +45,16 @@
     const CONFIG = {
       owner: 'menexsplayground',
       repo: 'study-app',
-      dataFile: 'data.json',
-      modelName: 'gemini-3.8-flash'
+      dataFile: 'data.json'
     };
+
+    // Záložní řetězec modelů: Pokud je jeden přetížený (503 High Demand), ihned skočí na další
+    const CASCADE_MODELS = [
+      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite'
+    ];
 
     function loadCleanSubjects() {
       try {
@@ -73,7 +80,8 @@
       selectedTopics: [],
       currentMode: null,
       chatHistory: [],
-      oralExamHistory: []
+      oralExamHistory: [],
+      lastActiveModel: 'gemini-3.8-flash'
     };
 
     function setCloudStatus(type, text) {
@@ -432,31 +440,60 @@
       return '';
     }
 
-    // --- PŘÍMÉ VOLÁNÍ GEMINI 3.8 FLASH ---
-    async function executeGeminiDirect(payload) {
+    // --- KASKÁDOVÝ MECHANISMUS (SMART CASCADE): ŘEŠÍ 503 HIGH DEMAND ---
+    async function executeGeminiWithFallback(payload) {
       const key = (state.apiKey || '').trim();
       if (!key) throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.modelName}:generateContent?key=${key}`;
-      
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      let lastError = null;
 
-      const data = await res.json();
+      for (const model of CASCADE_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-      if (!res.ok || (data && data.error)) {
-        const errorDetail = data && data.error ? data.error.message : `Chyba HTTP ${res.status}`;
-        throw new Error(`Google odpověděl: "${errorDetail}"`);
+          const data = await res.json();
+
+          // Kontrola, zda model nehlásí přetížení (503 / High Demand)
+          const isHighDemand = res.status === 503 ||
+            (data && data.error && (data.error.code === 503 || data.error.status === 'UNAVAILABLE' || (data.error.message && data.error.message.includes('high demand'))));
+
+          if (isHighDemand) {
+            console.warn(`Model ${model} je přetížený (High Demand), okamžitě zkouším další v kaskádě...`);
+            lastError = new Error(`Model ${model} je momentálně přetížený.`);
+            continue; // Přeskoč na další model v řetězci!
+          }
+
+          if (res.status === 404 || (data && data.error && data.error.code === 404)) {
+            continue;
+          }
+
+          if (!res.ok || (data && data.error)) {
+            const errorDetail = data && data.error ? data.error.message : `Chyba HTTP ${res.status}`;
+            throw new Error(errorDetail);
+          }
+
+          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+            throw new Error('Google nevrátil žádný text.');
+          }
+
+          // Úspěch! Zapamatujeme si funkční model
+          state.lastActiveModel = model;
+          return { text: data.candidates[0].content.parts[0].text, model };
+        } catch (err) {
+          if (err.message && err.message.includes('přetížený')) {
+            lastError = err;
+            continue;
+          }
+          throw err;
+        }
       }
 
-      if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-        throw new Error('Google nevrátil žádný text.');
-      }
-
-      return data.candidates[0].content.parts[0].text;
+      throw lastError || new Error('Všechny záložní modely Googlu jsou zrovna vytížené. Zkus to prosím za minutku.');
     }
 
     function extractTopicsList(rawText) {
@@ -499,7 +536,7 @@
       };
 
       try {
-        let raw = await executeGeminiDirect(payload);
+        const { text: raw, model } = await executeGeminiWithFallback(payload);
         const parsedTopics = extractTopicsList(raw);
 
         if (!parsedTopics || parsedTopics.length === 0) {
@@ -553,7 +590,7 @@
           generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
         };
 
-        const raw = await executeGeminiDirect(payload);
+        const { text: raw } = await executeGeminiWithFallback(payload);
         const parsedTopics = extractTopicsList(raw);
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
@@ -609,7 +646,7 @@
       else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy.";
 
       try {
-        const response = await executeGeminiDirect({
+        const { text: response } = await executeGeminiWithFallback({
           system_instruction: { parts: [{ text: sys }] },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.3 }
@@ -626,7 +663,7 @@
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji kartičky...</p></div>`;
 
       try {
-        let raw = await executeGeminiDirect({
+        let { text: raw } = await executeGeminiWithFallback({
           contents: [{ parts: [{ text: `Vytvoř 8 kartiček k této látce. Vrať POUZE validní JSON pole objektů s klíči 'q' a 'a':\n${getCombinedNotes()}` }] }],
           generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
         });
@@ -671,7 +708,7 @@
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji zkušební test...</p></div>`;
 
       try {
-        const response = await executeGeminiDirect({
+        const { text: response } = await executeGeminiWithFallback({
           contents: [{ parts: [{ text: `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj zatím správné odpovědi:\n${getCombinedNotes()}` }] }],
           generationConfig: { temperature: 0.3 }
         });
@@ -704,7 +741,7 @@
       const prompt = `TEST:\n${testQuestions}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
       
       try {
-        const evaluation = await executeGeminiDirect({
+        const { text: evaluation } = await executeGeminiWithFallback({
           system_instruction: { parts: [{ text: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby." }] },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.2 }
@@ -755,7 +792,7 @@
       const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
 
       try {
-        const reply = await executeGeminiDirect({
+        const { text: reply } = await executeGeminiWithFallback({
           system_instruction: { parts: [{ text: "Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku." }] },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.3 }
@@ -798,7 +835,7 @@
       const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nDOTAZ: ${val}`;
 
       try {
-        const reply = await executeGeminiDirect({
+        const { text: reply } = await executeGeminiWithFallback({
           system_instruction: { parts: [{ text: "Jsi trpělivý osobní lektor. Odpovídej věcně a stručně." }] },
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.3 }
@@ -865,7 +902,7 @@
       }
     }
 
-    // --- NASTAVENÍ A TESTOVÁNÍ GEMINI 3.8 FLASH ---
+    // --- NASTAVENÍ A TESTOVÁNÍ S AUTOMATICKÝM FALLBACKEM ---
     function renderSettings(msg = '') {
       const app = document.getElementById('app');
       const maskedKey = state.apiKey ? `${state.apiKey.substring(0, 7)}...${state.apiKey.substring(state.apiKey.length - 4)}` : 'Nezadáno';
@@ -873,7 +910,7 @@
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Verze v6.0 (Gemini 3.8 Flash)</p>
+        <p class="text-xs text-slate-400 mb-4">Verze v7.0 (SmartCascade: 3.8 / 3.1-lite / 2.5)</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
@@ -884,8 +921,8 @@
           </div>
           <input id="keyInput" type="text" value="${state.apiKey}" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 font-mono">
           
-          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-emerald-600/30 border border-emerald-500 text-emerald-300 font-bold rounded-lg text-xs active:scale-98 transition">
-            🔌 Otestovat klíč na Gemini 3.8 Flash
+          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-cyan-600/30 border border-cyan-500 text-cyan-300 font-bold rounded-lg text-xs active:scale-98 transition">
+            🔌 Otestovat a najít volný model
           </button>
           <div id="testKeyResult" class="text-xs font-medium mt-1"></div>
         </div>
@@ -913,27 +950,16 @@
         return;
       }
 
-      resDiv.innerHTML = '<span class="text-blue-400">⏳ Testuji spojení s modelem Gemini 3.8 Flash...</span>';
+      resDiv.innerHTML = '<span class="text-blue-400">⏳ Testuji řetězec modelů a hledám nepřetížený server...</span>';
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${key}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Odpověz jedním slovem: FUNGUJE" }] }]
-          })
+        const result = await executeGeminiWithFallback({
+          contents: [{ parts: [{ text: "Odpověz jedním slovem: FUNGUJE" }] }]
         });
 
-        const data = await res.json();
-
-        if (res.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-          resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE! Gemini 3.8 Flash odpověděl: "${data.candidates[0].content.parts[0].text.trim()}"</span>`;
-        } else {
-          const errMsg = data.error ? data.error.message : JSON.stringify(data);
-          resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Google chyba: ${errMsg}</span>`;
-        }
+        resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE!</span><br><span class="text-xs text-slate-300">Google odpověděl přes volný model <b>${result.model}</b>: "${result.text.trim()}"</span>`;
       } catch (err) {
-        resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba sítě: ${err.message}</span>`;
+        resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba: ${err.message}</span>`;
       }
     }
 
