@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v4.0</title>
+  <title>StudyApp v5.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40">v4.0 AutoModel</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40">v5.0 DIAGNOSTIC</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
@@ -72,8 +72,7 @@
       selectedTopics: [],
       currentMode: null,
       chatHistory: [],
-      oralExamHistory: [],
-      activeModel: 'gemini-2.0-flash'
+      oralExamHistory: []
     };
 
     function setCloudStatus(type, text) {
@@ -113,21 +112,15 @@
             setCloudStatus('synced', 'Synchronizováno');
             if (document.getElementById('statsSubCount')) renderHome();
           }
-        } else if (res.status === 404) {
-          setCloudStatus('synced', 'Nový cloud');
         }
       } catch (err) {
-        console.error(err);
         setCloudStatus('error', 'Chyba cloudu');
       }
     }
 
     async function pushToCloud() {
       localStorage.setItem('study_data', JSON.stringify(state.subjects));
-      if (!state.ghToken) {
-        setCloudStatus('local', 'Pouze v mobilu');
-        return;
-      }
+      if (!state.ghToken) return;
 
       setCloudStatus('syncing', 'Ukládám do cloudu...');
       try {
@@ -155,11 +148,8 @@
           state.ghSha = resData.content.sha;
           localStorage.setItem('github_data_sha', state.ghSha);
           setCloudStatus('synced', 'Uloženo na web');
-        } else {
-          setCloudStatus('error', 'Chyba ukládání');
         }
       } catch (err) {
-        console.error(err);
         setCloudStatus('error', 'Offline');
       }
     }
@@ -173,7 +163,7 @@
       app.innerHTML = '';
 
       if (!state.apiKey && screen !== 'settings') {
-        renderSettings('Nejprve vlož svůj Gemini API klíč pro fungování AI.');
+        renderSettings('Nejprve vlož svůj Gemini API klíč.');
         return;
       }
 
@@ -203,7 +193,6 @@
           <p class="text-slate-400 text-xs mt-1">
             <span id="statsSubCount" class="text-blue-400 font-bold">${state.subjects.length} sešitů</span>, 
             <span class="text-blue-400 font-bold">${totalCount} kapitol</span>
-            ${state.ghToken ? '• <span class="text-emerald-400 font-semibold">☁️ Cloud aktivní</span>' : '• <span class="text-amber-400 font-semibold">⚠️ Cloud vypnut</span>'}
           </p>
         </div>
 
@@ -245,7 +234,6 @@
           <div class="text-center py-12">
             <span class="text-4xl">📂</span>
             <p class="text-slate-300 font-bold mt-3 mb-1">Nemáš uložené žádné sešity</p>
-            <p class="text-slate-400 text-xs mb-5">Začni tím, že vložíš celý sešit naráz.</p>
             <button onclick="nav('vkladani')" class="px-5 py-3 rounded-xl bg-emerald-600 font-bold text-sm">Vložit první sešit</button>
           </div>
         `;
@@ -284,10 +272,7 @@
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Vyber témata / nadpisy</h2>
-        <p class="text-slate-400 text-xs mb-5">Zaškrtni úseky látky, ze kterých ${targetMode === 'uceni' ? 'se chceš učit' : 'chceš být zkoušen'}.</p>
-        
-        <div>${subjectsHtml}</div>
-
+        <div class="mt-4">${subjectsHtml}</div>
         <div class="sticky bottom-4 pt-2">
           <button onclick="confirmSelectedTopics()" class="w-full py-4 rounded-xl bg-blue-600 font-bold shadow-lg shadow-blue-600/30 active:scale-98 transition">
             Pokračovat s vybranou látkou
@@ -331,28 +316,23 @@
       const app = document.getElementById('app');
       app.innerHTML = `
         <button onclick="nav('topicSelect', 'uceni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
-        <h2 class="text-2xl font-black">Režimy učení</h2>
-        <p class="text-xs text-blue-400 mb-5 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
-
+        <h2 class="text-2xl font-black mb-4">Režimy učení</h2>
         <div class="grid gap-3">
-          <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">📑</span>
             <div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
           </button>
-
-          <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">👶</span>
-            <div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie a metafory ze života.</p></div>
+            <div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života.</p></div>
           </button>
-
-          <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">⚡</span>
-            <div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy a chytáky.</p></div>
+            <div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy.</p></div>
           </button>
-
-          <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">💬</span>
-            <div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Ptej se AI přímo na tuto vybranou látku.</p></div>
+            <div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Chatuj s AI přímo o této látce.</p></div>
           </button>
         </div>
       `;
@@ -363,21 +343,17 @@
       const app = document.getElementById('app');
       app.innerHTML = `
         <button onclick="nav('topicSelect', 'zkouseni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
-        <h2 class="text-2xl font-black">Zkoušení a testy</h2>
-        <p class="text-xs text-purple-400 mb-5 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
-
+        <h2 class="text-2xl font-black mb-4">Zkoušení a testy</h2>
         <div class="grid gap-3">
-          <button onclick="startFlashcards()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="startFlashcards()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">🎴</span>
-            <div><h3 class="font-bold">Flashcards (Otáčecí kartičky)</h3><p class="text-xs text-slate-400">Otázka na líci, odpověď na rubu.</p></div>
+            <div><h3 class="font-bold">Flashcards (Kartičky)</h3><p class="text-xs text-slate-400">Otázka na líci, odpověď na rubu.</p></div>
           </button>
-
-          <button onclick="runAiTest()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="runAiTest()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">📝</span>
             <div><h3 class="font-bold">Test nanečisto</h3><p class="text-xs text-slate-400">Vygeneruje otázky a na konci tě oznámkuje.</p></div>
           </button>
-
-          <button onclick="startOralExam()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left active:scale-98 transition">
+          <button onclick="startOralExam()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
             <span class="text-2xl">🎙️</span>
             <div><h3 class="font-bold text-purple-400">Ústní zkoušení (v textu)</h3><p class="text-xs text-slate-400">Učitel tě zkouší u tabule, reaguje na tvé odpovědi.</p></div>
           </button>
@@ -396,7 +372,6 @@
         <p class="text-slate-400 text-xs mb-5">AI sama rozpozná nadpisy a rozdělí sešit na kapitoly.</p>
 
         <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
-          
           <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">1. Předmět</label>
             ${state.subjects.length > 0 ? `
@@ -411,29 +386,23 @@
             <input id="inputSubName" type="text" placeholder="Zadej název předmětu (např. Dějepis)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 ${state.subjects.length > 0 ? 'hidden' : ''}">
           </div>
 
-          <!-- MOŽNOST A: FOTKY -->
           <div class="pt-3 border-t border-slate-800">
             <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Možnost A: Vybrat fotky sešitu</label>
-            <p class="text-[11px] text-slate-400 mb-2">Můžeš označit i 10–20 fotek najednou v galerii!</p>
-            <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer active:scale-98 transition">
+            <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer">
               <span class="text-3xl">📸</span>
               <span class="text-sm font-bold mt-2 text-blue-400">Vybrat fotky sešitu</span>
-              <span class="text-[10px] text-slate-400 mt-1">Podporuje hromadný výběr</span>
               <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
             </label>
           </div>
 
-          <!-- MOŽNOST B: APPLE NOTES -->
           <div class="pt-3 border-t border-slate-800">
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit celý sešit z Apple Notes</label>
-            <p class="text-[11px] text-slate-400 mb-2">V poznámkách dej "Vybrat vše", zkopíruj a vlož sem celý sešit najednou.</p>
             <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
             
             <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
               🚀 Nechat AI rozdělit sešit na témata
             </button>
           </div>
-
         </div>
       `;
     }
@@ -453,105 +422,40 @@
     function getResolvedSubjectName() {
       const select = document.getElementById('selectSub');
       const input = document.getElementById('inputSubName');
-      if (select && select.value && select.value !== '__NEW__') {
-        return select.value.trim();
-      }
-      if (input && input.value) {
-        return input.value.trim();
-      }
+      if (select && select.value && select.value !== '__NEW__') return select.value.trim();
+      if (input && input.value) return input.value.trim();
       return '';
     }
 
-    // --- DYNAMICKÉ ZJIŠTĚNÍ DOSTUPNÉHO MODELU OD GOOGLU ---
-    async function getActiveGeminiModel(key) {
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.models) {
-            const preferred = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest'];
-            for (let p of preferred) {
-              if (data.models.some(m => m.name === 'models/' + p)) {
-                return p;
-              }
-            }
-            const anyFlash = data.models.find(m => m.name.includes('flash') && m.supportedGenerationMethods?.includes('generateContent'));
-            if (anyFlash) return anyFlash.name.replace('models/', '');
-          }
-        }
-      } catch (e) {}
-      return 'gemini-2.0-flash';
-    }
-
-    async function callGeminiApi({ systemPrompt, contents, isJson = false }) {
+    // --- PŘÍMÉ, ČISTÉ VOLÁNÍ GEMINI 2.0 FLASH (BEZ ZÁKEŘNÉHO FALLBACKU NA 1.5) ---
+    async function executeGeminiDirect(payload) {
       const key = (state.apiKey || '').trim();
-      if (!key) {
-        throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
-      }
+      if (!key) throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
 
-      const activeModel = await getActiveGeminiModel(key);
-      const MODELS = [activeModel, 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest'];
-      let lastError = null;
-
-      for (const model of [...new Set(MODELS)]) {
-        try {
-          const bodyPayload = {
-            contents: contents,
-            generationConfig: { temperature: 0.2 }
-          };
-
-          if (systemPrompt) {
-            bodyPayload.system_instruction = { parts: [{ text: systemPrompt }] };
-          }
-
-          if (isJson) {
-            bodyPayload.generationConfig.response_mime_type = "application/json";
-          }
-
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bodyPayload)
-          });
-
-          const data = await res.json();
-
-          if (res.status === 404 || (data && data.error && (data.error.code === 404 || (data.error.message && data.error.message.includes('not found'))))) {
-            lastError = new Error(data && data.error ? data.error.message : `Model ${model} nebyl nalezen.`);
-            continue;
-          }
-
-          if (!res.ok || (data && data.error)) {
-            const msg = (data && data.error && data.error.message) ? data.error.message : `Chyba API (${res.status})`;
-            throw new Error(`Google API: ${msg}`);
-          }
-
-          if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
-            throw new Error('Gemini nevrátil žádný text.');
-          }
-
-          return data.candidates[0].content.parts[0].text;
-        } catch (err) {
-          if (err.message && err.message.includes('not found')) {
-            lastError = err;
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      throw lastError || new Error('Žádný z Gemini modelů neodpověděl.');
-    }
-
-    async function callGemini(systemPrompt, userPrompt, isJson = false) {
-      return await callGeminiApi({
-        systemPrompt,
-        contents: [{ parts: [{ text: userPrompt }] }],
-        isJson
+      // Voláme striktně ověřený model gemini-2.0-flash
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+      
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
+
+      const data = await res.json();
+
+      if (!res.ok || (data && data.error)) {
+        const errorDetail = data && data.error ? data.error.message : `Chyba HTTP ${res.status}`;
+        throw new Error(`Google odpověděl: "${errorDetail}"`);
+      }
+
+      if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+        throw new Error('Google nevrátil žádný text.');
+      }
+
+      return data.candidates[0].content.parts[0].text;
     }
 
-    function extractTopicsListFromRawJson(rawText) {
+    function extractTopicsList(rawText) {
       let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       let parsed = JSON.parse(cleaned);
 
@@ -565,7 +469,6 @@
       return [];
     }
 
-    // --- ZPRACOVÁNÍ TEXTU Z APPLE NOTES ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
@@ -580,12 +483,20 @@
         btn.disabled = true;
       }
 
-      const systemPrompt = "Jsi asistent pro analýzu školních sešitů. Tvým úkolem je projít celý sešit, najít všechny hlavní nadpisy a rozdělit látku na logické úseky (témata) od nadpisu k nadpisu. Vrať VÝHRADNĚ validní JSON pole objektů s klíči 'title' (název nadpisu) a 'content' (veškerý text a poznámky patřící pod tento nadpis). Příklad: [{\"title\":\"1. Nadpis\",\"content\":\"text...\"}]";
-      const userPrompt = `Zde je kompletní sešit předmětu ${subName}:\n\n${fullText}`;
+      const payload = {
+        system_instruction: {
+          parts: [{ text: "Jsi asistent pro analýzu školních sešitů. Rozděl zadaný text na témata podle hlavních nadpisů. Vrať VÝHRADNĚ validní JSON pole objektů s klíči 'title' a 'content'. Příklad: [{\"title\":\"1. Nadpis\",\"content\":\"text poznámek...\"}]" }]
+        },
+        contents: [{ parts: [{ text: `Předmět: ${subName}\n\n${fullText}` }] }],
+        generationConfig: {
+          temperature: 0.2,
+          response_mime_type: "application/json"
+        }
+      };
 
       try {
-        let raw = await callGemini(systemPrompt, userPrompt, true);
-        const parsedTopics = extractTopicsListFromRawJson(raw);
+        let raw = await executeGeminiDirect(payload);
+        const parsedTopics = extractTopicsList(raw);
 
         if (!parsedTopics || parsedTopics.length === 0) {
           throw new Error('AI nenašla v textu žádné nadpisy.');
@@ -593,7 +504,7 @@
 
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
-        alert('Chyba při zpracování: ' + (err.message || err));
+        alert('CHYBA: ' + err.message);
         if (btn) {
           btn.innerText = '🚀 Nechat AI rozdělit sešit na témata';
           btn.disabled = false;
@@ -601,7 +512,6 @@
       }
     }
 
-    // --- HROMADNÉ FOTKY ---
     async function handleMultipleImages(input) {
       if (!input || !input.files || input.files.length === 0) return;
       const subName = getResolvedSubjectName();
@@ -618,7 +528,6 @@
         <div class="text-center py-20">
           <div class="animate-spin text-4xl mb-4">🌀</div>
           <h2 class="text-xl font-bold mb-1">AI čte celý sešit (${count} fotek)...</h2>
-          <p class="text-xs text-slate-400">Gemini přepisuje rukopis, hledá nadpisy a dělí sešit na kapitoly.</p>
         </div>
       `;
 
@@ -627,24 +536,24 @@
         for (let i = 0; i < input.files.length; i++) {
           const file = input.files[i];
           const b64 = await readFileAsBase64(file);
-          fileParts.push({
-            inline_data: { mime_type: file.type, data: b64 }
-          });
+          fileParts.push({ inline_data: { mime_type: file.type, data: b64 } });
         }
 
-        const promptText = `Toto jsou stránky celého školního sešitu pro předmět ${subName}. 
-Přečti veškeré poznámky, najdi hlavní nadpisy kapitol a rozděl látku na jednotlivá témata (úseky od nadpisu k nadpisu).
-Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název nadpisu) a 'content' (přepsaný text látky).`;
+        const payload = {
+          contents: [{
+            parts: [
+              { text: `Předmět: ${subName}. Přečti sešit, najdi nadpisy a rozděl ho na témata. Vrať POUZE validní JSON pole objektů s klíči 'title' a 'content'.` },
+              ...fileParts
+            ]
+          }],
+          generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
+        };
 
-        const raw = await callGeminiApi({
-          contents: [{ parts: [{ text: promptText }, ...fileParts] }],
-          isJson: true
-        });
-
-        const parsedTopics = extractTopicsListFromRawJson(raw);
+        const raw = await executeGeminiDirect(payload);
+        const parsedTopics = extractTopicsList(raw);
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
-        alert('Chyba při čtení fotek: ' + (err.message || err));
+        alert('CHYBA: ' + err.message);
         nav('vkladani');
       }
     }
@@ -691,16 +600,16 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       let sys = "Jsi špičkový lektor. Používej přehledné odrážky a tučné písmo.";
       let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
 
-      if (type === 'shrnuti') {
-        prompt += "Vytvoř jasné, logické a strukturované shrnutí této látky v odrážkách.";
-      } else if (type === 'eli5') {
-        prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5). Používej vtipné analogie ze života.";
-      } else if (type === 'predzvonici') {
-        prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější definice, vzorce a chytáky.";
-      }
+      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách.";
+      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5).";
+      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy.";
 
       try {
-        const response = await callGemini(sys, prompt, false);
+        const response = await executeGeminiDirect({
+          system_instruction: { parts: [{ text: sys }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        });
         nav('result', { title: 'Učení', content: response });
       } catch(e) {
         alert(e.message);
@@ -712,15 +621,15 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji kartičky...</p></div>`;
 
-      const sys = "Vrať POUZE validní JSON pole objektů s klíči 'q' (otázka) a 'a' (odpověď). Příklad: [{\"q\":\"Otázka\",\"a\":\"Odpověď\"}]";
-      const user = `Z následujících kapitol vytvoř 8 kartiček:\n${getCombinedNotes()}`;
-
       try {
-        let raw = await callGemini(sys, user, true);
-        const cards = extractTopicsListFromRawJson(raw);
+        let raw = await executeGeminiDirect({
+          contents: [{ parts: [{ text: `Vytvoř 8 kartiček k této látce. Vrať POUZE validní JSON pole objektů s klíči 'q' a 'a':\n${getCombinedNotes()}` }] }],
+          generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
+        });
+        const cards = extractTopicsList(raw);
         nav('flashcards', cards);
       } catch(e) {
-        alert('Chyba při tvorbě kartiček: ' + e.message);
+        alert('Chyba: ' + e.message);
         nav('zkouseniHub');
       }
     }
@@ -757,9 +666,11 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji zkušební test...</p></div>`;
 
-      const sys = "Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj zatím správné odpovědi.";
       try {
-        const response = await callGemini(sys, getCombinedNotes(), false);
+        const response = await executeGeminiDirect({
+          contents: [{ parts: [{ text: `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj zatím správné odpovědi:\n${getCombinedNotes()}` }] }],
+          generationConfig: { temperature: 0.3 }
+        });
 
         app.innerHTML = `
           <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
@@ -786,11 +697,14 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Opravuji test a počítám známku...</p></div>`;
 
-      const sys = "Jsi spravedlivý učitel. Zhodnoť odpovědi studenta na test, dej mu známku (1 až 5) a u každé chyby vysvětli správnou odpověď.";
       const prompt = `TEST:\n${testQuestions}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
       
       try {
-        const evaluation = await callGemini(sys, prompt, false);
+        const evaluation = await executeGeminiDirect({
+          system_instruction: { parts: [{ text: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby." }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2 }
+        });
         nav('result', { title: 'Výsledek testu', content: evaluation });
       } catch(e) {
         alert(e.message);
@@ -834,11 +748,14 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       state.oralExamHistory.push({ role: 'user', text: val });
       renderOralExamView();
 
-      const sys = "Jsi přísný ale férový učitel u tabule. V 2-3 větách zhodnoť odpověď a hned polož další návodnou otázku.";
-      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE ZKOUŠENÍ:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
+      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
 
       try {
-        const reply = await callGemini(sys, prompt, false);
+        const reply = await executeGeminiDirect({
+          system_instruction: { parts: [{ text: "Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku." }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        });
         state.oralExamHistory.push({ role: 'model', text: reply });
         renderOralExamView();
       } catch(e) {
@@ -874,11 +791,14 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       state.chatHistory.push({ role: 'user', text: val });
       renderChatView();
 
-      const sys = "Jsi trpělivý osobní lektor. Odpovídej věcně a stručně.";
-      const prompt = `POZNÁMKY STUDENTA:\n${getCombinedNotes()}\n\nDOTAZ: ${val}`;
+      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nDOTAZ: ${val}`;
 
       try {
-        const reply = await callGemini(sys, prompt, false);
+        const reply = await executeGeminiDirect({
+          system_instruction: { parts: [{ text: "Jsi trpělivý osobní lektor. Odpovídej věcně a stručně." }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        });
         state.chatHistory.push({ role: 'model', text: reply });
         renderChatView();
       } catch(e) {
@@ -941,33 +861,76 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       }
     }
 
+    // --- NASTAVENÍ S DIAGNOSTIKOU A TESTEM KLÍČE ---
     function renderSettings(msg = '') {
       const app = document.getElementById('app');
+      const maskedKey = state.apiKey ? `${state.apiKey.substring(0, 7)}...${state.apiKey.substring(state.apiKey.length - 4)}` : 'Nezadáno';
+
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v4.0 - AutoModel).</p>
+        <p class="text-xs text-slate-400 mb-4">Verze v5.0 DIAGNOSTIC</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-4">
-          <label class="block text-xs font-bold text-slate-400 uppercase">1. Gemini API Klíč</label>
-          <input id="keyInput" type="password" value="${state.apiKey}" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold text-slate-400 uppercase">1. Gemini API Klíč</label>
+            <span class="text-[10px] text-slate-400">Aktuálně v paměti: <b class="text-slate-200">${maskedKey}</b></span>
+          </div>
+          <input id="keyInput" type="text" value="${state.apiKey}" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 font-mono">
+          
+          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-purple-600/30 border border-purple-500 text-purple-300 font-bold rounded-lg text-xs active:scale-98 transition">
+            🔌 Otestovat API klíč proti serverům Googlu
+          </button>
+          <div id="testKeyResult" class="text-xs font-medium mt-1"></div>
         </div>
 
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-4">
           <label class="block text-xs font-bold text-slate-400 uppercase">2. GitHub Cloud Token</label>
-          <input id="ghTokenInput" type="password" value="${state.ghToken}" placeholder="ghp_..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+          <input id="ghTokenInput" type="password" value="${state.ghToken}" placeholder="ghp_..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 font-mono">
         </div>
 
         <button onclick="saveAllSettings()" class="w-full py-3.5 bg-blue-600 font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30 active:scale-98 transition mb-3">
           💾 Uložit nastavení
         </button>
 
-        <button onclick="clearCorruptedData()" class="w-full py-2.5 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
-          🧹 Vyčistit mezipaměť témat
+        <button onclick="clearCorruptedData()" class="w-full py-2 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
+          🧹 Smazat uložená témata a začít znovu
         </button>
       `;
+    }
+
+    async function testCurrentKey() {
+      const resDiv = document.getElementById('testKeyResult');
+      const key = (document.getElementById('keyInput').value || '').trim();
+      if (!key) {
+        resDiv.innerHTML = '<span class="text-red-400">❌ Vyplň klíč do políčka výše!</span>';
+        return;
+      }
+
+      resDiv.innerHTML = '<span class="text-blue-400">⏳ Odesílám testovací dotaz na Google Gemini 2.0 Flash...</span>';
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Odpověz jedním slovem: FUNGUJE" }] }]
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE! Google odpověděl: "${data.candidates[0].content.parts[0].text.trim()}"</span>`;
+        } else {
+          const errMsg = data.error ? data.error.message : JSON.stringify(data);
+          resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Google odmítl požadavek:</span><br><span class="text-red-300 text-[11px]">${errMsg}</span>`;
+        }
+      } catch (err) {
+        resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba sítě: ${err.message}</span>`;
+      }
     }
 
     function clearCorruptedData() {
