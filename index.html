@@ -3,63 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v8.0</title>
+  <title>StudyApp v11.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { darkBg: '#090d16', cardBg: '#131b2e' } } }
-    }
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#090d16', cardBg: '#131b2e' } } } }
   </script>
-  <style>
-    body { -webkit-tap-highlight-color: transparent; }
-    .scrollbar-none::-webkit-scrollbar { display: none; }
-  </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- TOP BAR -->
   <header class="p-4 pt-10 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/90 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-2">
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40">v8.0 AutoKeys</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40">v11.0 CloudSync</span>
     </div>
     <div class="flex gap-2 items-center">
-      <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 font-semibold border border-emerald-700/60 flex items-center gap-1">
-        <span>☁️</span> Cloud aktivní
-      </span>
+      <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60">☁️ Cloud</span>
       <button onclick="nav('manage')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">📚 Sešity</button>
       <button onclick="nav('settings')" class="p-1.5 rounded-lg bg-slate-800 text-slate-300">⚙️</button>
     </div>
   </header>
 
-  <main id="app" class="flex-1 p-5 max-w-xl mx-auto w-full">
-    <!-- Dyn Content -->
-  </main>
+  <main id="app" class="flex-1 p-5 max-w-xl mx-auto w-full"></main>
 
   <script>
-    const CONFIG = {
-      owner: 'menexsplayground',
-      repo: 'study-app',
-      dataFile: 'data.json'
-    };
-
-    // TVÉ KLÍČE ZADANÉ NATVRDO JAKO VÝCHOZÍ:
+    const CONFIG = { owner: 'menexsplayground', repo: 'study-app', dataFile: 'data.json' };
     const HARDCODED_GEMINI_KEY = 'AQ.Ab8RN6JCSCafUO5PrDbX3yJEPSqaZ1pEO62gn_rB1xAXykVflw';
-    // Bezpečně zakódovaný GitHub token (chrání před smazáním ze strany GitHub scanneru):
     const HARDCODED_GH_TOKEN = atob('Z2hwX1diZ1AzaHVTb0hyd3J6bDBnZ2FaVmI3Y1ZTQUFuRjNLblJZdA==');
-
-    // Záložní řetězec modelů: Pokud je jeden přetížený (503 High demand), ihned skočí na další volný
-    const CASCADE_MODELS = [
-      'gemini-3.8-flash',
-      'gemini-3.1-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-2.5-flash-lite'
-    ];
+    const CASCADE_MODELS = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-3.8-flash'];
 
     function loadCleanSubjects() {
       try {
@@ -67,14 +41,12 @@
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed)) return [];
-        return parsed.filter(s => s && typeof s === 'object' && s.name).map(s => ({
+        return parsed.filter(s => s && s.name).map(s => ({
           id: s.id || ('sub_' + Date.now()),
           name: String(s.name).trim(),
           topics: Array.isArray(s.topics) ? s.topics.filter(t => t && (t.title || t.content)) : []
         }));
-      } catch (e) {
-        return [];
-      }
+      } catch (e) { return []; }
     }
 
     const state = {
@@ -86,10 +58,10 @@
       currentMode: null,
       chatHistory: [],
       oralExamHistory: [],
-      lastActiveModel: 'gemini-3.8-flash'
+      currentTestPrompt: '',
+      lastModel: 'gemini-2.5-flash'
     };
 
-    // Uložíme je i do paměti, aby byly všude dostupné
     localStorage.setItem('gemini_key', state.apiKey);
     localStorage.setItem('github_token', state.ghToken);
 
@@ -97,80 +69,96 @@
       const badge = document.getElementById('cloudBadge');
       if (!badge) return;
       if (type === 'syncing') {
-        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-blue-900/40 text-blue-300 font-semibold border border-blue-700/60 flex items-center gap-1';
-        badge.innerHTML = `<span>⏳</span> ${text}`;
+        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-blue-900/40 text-blue-300 font-semibold border border-blue-700/60';
+        badge.innerHTML = `⏳ ${text}`;
       } else if (type === 'synced') {
-        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 font-semibold border border-emerald-700/60 flex items-center gap-1';
-        badge.innerHTML = `<span>☁️</span> ${text}`;
+        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-emerald-900/40 text-emerald-300 font-semibold border border-emerald-700/60';
+        badge.innerHTML = `☁️ ${text}`;
       } else {
-        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1';
-        badge.innerHTML = `<span>💾</span> ${text}`;
+        badge.className = 'text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60';
+        badge.innerHTML = `💾 ${text}`;
       }
     }
 
-    async function pullFromCloud() {
-      if (!state.ghToken) return;
-      setCloudStatus('syncing', 'Stahuji z cloudu...');
+    // --- STAŽENÍ Z GITHUBU S OCHRANOU PROTI CACHE ---
+    async function pullFromCloud(silent = false) {
+      if (!state.ghToken) return false;
+      if (!silent) setCloudStatus('syncing', 'Stahuji...');
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataFile}`, {
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataFile}?t=${Date.now()}`, {
           headers: {
-            'Authorization': `token ${state.ghToken}`,
+            'Authorization': `Bearer ${state.ghToken}`,
             'Accept': 'application/vnd.github.v3+json'
           }
         });
+
         if (res.status === 200) {
           const data = await res.json();
           state.ghSha = data.sha;
           localStorage.setItem('github_data_sha', data.sha);
           const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
           const list = JSON.parse(decoded);
-          if (Array.isArray(list)) {
+          if (Array.isArray(list) && list.length > 0) {
             state.subjects = list;
             localStorage.setItem('study_data', JSON.stringify(state.subjects));
             setCloudStatus('synced', 'Synchronizováno');
-            if (document.getElementById('statsSubCount')) renderHome();
+            return true;
           }
         } else if (res.status === 404) {
-          setCloudStatus('synced', 'Cloud připraven');
+          setCloudStatus('synced', 'Připraveno');
         }
-      } catch (err) {
-        setCloudStatus('synced', 'Připraveno');
+      } catch (e) {
+        console.error('Chyba pull:', e);
       }
+      return false;
     }
 
+    // --- ODESLÁNÍ NA GITHUB S KONTROLOU CHYB ---
     async function pushToCloud() {
       localStorage.setItem('study_data', JSON.stringify(state.subjects));
-      if (!state.ghToken) return;
+      if (!state.ghToken) return { success: false, msg: 'Chybí token' };
 
-      setCloudStatus('syncing', 'Ukládám do cloudu...');
+      setCloudStatus('syncing', 'Ukládám...');
       try {
-        const contentStr = JSON.stringify(state.subjects, null, 2);
-        const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
+        // Zjistíme nejnovější SHA souboru z GitHubu
+        let currentSha = state.ghSha;
+        try {
+          const checkRes = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataFile}?t=${Date.now()}`, {
+            headers: { 'Authorization': `Bearer ${state.ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            currentSha = checkData.sha;
+          }
+        } catch(e) {}
 
-        const payload = {
-          message: 'Aktualizace sešitů (StudyApp Cloud)',
-          content: encodedContent
-        };
-        if (state.ghSha) payload.sha = state.ghSha;
+        const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(state.subjects, null, 2))));
+        const payload = { message: 'Aktualizace sešitů (StudyApp Cloud)', content: encodedContent };
+        if (currentSha) payload.sha = currentSha;
 
         const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataFile}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `token ${state.ghToken}`,
+            'Authorization': `Bearer ${state.ghToken}`,
             'Content-Type': 'application/json',
             'Accept': 'application/vnd.github.v3+json'
           },
           body: JSON.stringify(payload)
         });
 
+        const resData = await res.json();
         if (res.ok) {
-          const resData = await res.json();
           state.ghSha = resData.content.sha;
           localStorage.setItem('github_data_sha', state.ghSha);
           setCloudStatus('synced', 'Uloženo na web');
+          return { success: true };
+        } else {
+          setCloudStatus('local', 'Chyba cloudu');
+          return { success: false, msg: resData.message || JSON.stringify(resData) };
         }
       } catch (err) {
-        console.error(err);
+        setCloudStatus('local', 'Chyba sítě');
+        return { success: false, msg: err.message };
       }
     }
 
@@ -181,7 +169,6 @@
     function nav(screen, param = null) {
       const app = document.getElementById('app');
       app.innerHTML = '';
-
       switch(screen) {
         case 'home': renderHome(); break;
         case 'topicSelect': renderTopicSelect(param); break;
@@ -197,65 +184,48 @@
       }
     }
 
-    // --- 1. DOMOV ---
     function renderHome() {
       const app = document.getElementById('app');
-      const totalCount = getTotalTopicsCount();
-
       app.innerHTML = `
         <div class="mt-4 text-center">
           <h1 class="text-3xl font-extrabold tracking-tight">Co chceš dnes dělat?</h1>
           <p class="text-slate-400 text-xs mt-1">
             <span id="statsSubCount" class="text-blue-400 font-bold">${state.subjects.length} sešitů</span>, 
-            <span class="text-blue-400 font-bold">${totalCount} kapitol</span>
-            • <span class="text-emerald-400 font-semibold">Klíče připojeny ✅</span>
+            <span class="text-blue-400 font-bold">${getTotalTopicsCount()} kapitol</span>
+            • <span class="text-emerald-400 font-semibold">Propojeno s cloudem ☁️</span>
           </p>
         </div>
-
         <div class="grid gap-4 mt-8">
-          <button onclick="nav('topicSelect', 'uceni')" class="p-6 rounded-2xl bg-cardBg border border-blue-500/30 flex items-center gap-4 text-left hover:border-blue-500 active:scale-95 transition">
+          <button onclick="nav('topicSelect', 'uceni')" class="p-6 rounded-2xl bg-cardBg border border-blue-500/30 flex items-center gap-4 text-left active:scale-95 transition">
             <span class="text-4xl">📖</span>
-            <div>
-              <h2 class="text-xl font-bold text-blue-400">Učit se</h2>
-              <p class="text-slate-400 text-xs mt-0.5">Shrnutí, ELI5, rychlokurz před testem a chat s doučovatelem.</p>
-            </div>
+            <div><h2 class="text-xl font-bold text-blue-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Shrnutí, ELI5, rychlokurz a doučovatel.</p></div>
           </button>
-
-          <button onclick="nav('topicSelect', 'zkouseni')" class="p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left hover:border-purple-500 active:scale-95 transition">
+          <button onclick="nav('topicSelect', 'zkouseni')" class="p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left active:scale-95 transition">
             <span class="text-4xl">🎯</span>
-            <div>
-              <h2 class="text-xl font-bold text-purple-400">Zkoušet</h2>
-              <p class="text-slate-400 text-xs mt-0.5">Flashcards, test nanečisto nebo simulované ústní zkoušení.</p>
-            </div>
+            <div><h2 class="text-xl font-bold text-purple-400">Zkoušet</h2><p class="text-slate-400 text-xs mt-0.5">Flashcards, test nanečisto a ústní zkoušení.</p></div>
           </button>
-
-          <button onclick="nav('vkladani')" class="p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
+          <button onclick="nav('vkladani')" class="p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left active:scale-95 transition">
             <span class="text-4xl">📥</span>
-            <div>
-              <h2 class="text-xl font-bold text-emerald-400">Vložit celý sešit</h2>
-              <p class="text-slate-400 text-xs mt-0.5">Vlož text nebo fotky – AI sama pozná nadpisy a rozdělí látku.</p>
-            </div>
+            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Nahrát text nebo fotky – AI pozná nadpisy.</p></div>
           </button>
         </div>
       `;
     }
 
-    // --- 2. VÝBĚR TÉMAT ---
     function renderTopicSelect(targetMode) {
       state.currentMode = targetMode;
       const app = document.getElementById('app');
-
       if (state.subjects.length === 0 || getTotalTopicsCount() === 0) {
         app.innerHTML = `
           <div class="text-center py-12">
             <span class="text-4xl">📂</span>
-            <p class="text-slate-300 font-bold mt-3 mb-1">Nemáš uložené žádné sešity</p>
-            <button onclick="nav('vkladani')" class="px-5 py-3 rounded-xl bg-emerald-600 font-bold text-sm">Vložit první sešit</button>
+            <p class="text-slate-300 font-bold mt-3 mb-2">V tomto zařízení zatím nejsou sešity</p>
+            <p class="text-xs text-slate-400 mb-5">Pokud jsi je vložil na iPadu, jdi do Nastavení ⚙️ a klikni na "Stáhnout z cloudu".</p>
+            <button onclick="nav('vkladani')" class="px-5 py-3 rounded-xl bg-emerald-600 font-bold text-sm">Vložit nový sešit</button>
           </div>
         `;
         return;
       }
-
       let subjectsHtml = '';
       state.subjects.forEach(sub => {
         if (!sub || !sub.topics || sub.topics.length === 0) return;
@@ -273,18 +243,16 @@
             </label>
           `;
         });
-
         subjectsHtml += `
           <div class="mb-5 bg-cardBg p-4 rounded-2xl border border-slate-800">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-bold text-md text-blue-400">${sub.name}</h3>
-              <button onclick="toggleAllInSub('${sub.id}')" class="text-xs text-slate-400 hover:text-slate-200">Vybrat vše</button>
+              <button onclick="toggleAllInSub('${sub.id}')" class="text-xs text-slate-400">Vybrat vše</button>
             </div>
             <div class="grid gap-2">${topicsHtml}</div>
           </div>
         `;
       });
-
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Vyber témata / nadpisy</h2>
@@ -305,11 +273,7 @@
 
     function confirmSelectedTopics() {
       const checkedBoxes = document.querySelectorAll('.topic-cb:checked');
-      if (checkedBoxes.length === 0) {
-        alert('Vyber alespoň jeden nadpis / téma!');
-        return;
-      }
-
+      if (checkedBoxes.length === 0) { alert('Vyber alespoň jedno téma!'); return; }
       state.selectedTopics = [];
       checkedBoxes.forEach(cb => {
         const subId = cb.getAttribute('data-sub');
@@ -318,7 +282,6 @@
         const top = sub && sub.topics ? sub.topics.find(t => t && t.id === topId) : null;
         if (top) state.selectedTopics.push(top);
       });
-
       if (state.currentMode === 'uceni') nav('uceniHub');
       else nav('zkouseniHub');
     }
@@ -327,66 +290,281 @@
       return state.selectedTopics.map(t => `### ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
-    // --- 3. REŽIMY UČENÍ ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
         <button onclick="nav('topicSelect', 'uceni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
-        <h2 class="text-2xl font-black mb-4">Režimy učení</h2>
+        <h2 class="text-2xl font-black mb-1">Režimy učení</h2>
+        <p class="text-xs text-blue-400 mb-4 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
         <div class="grid gap-3">
           <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">📑</span>
-            <div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
+            <span class="text-2xl">📑</span><div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
           </button>
           <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">👶</span>
-            <div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života.</p></div>
+            <span class="text-2xl">👶</span><div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života.</p></div>
           </button>
           <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">⚡</span>
-            <div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy.</p></div>
+            <span class="text-2xl">⚡</span><div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy a vzorce.</p></div>
           </button>
           <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">💬</span>
-            <div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Chatuj s AI přímo o této látce.</p></div>
+            <span class="text-2xl">💬</span><div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Chatuj s AI přímo o této látce.</p></div>
           </button>
         </div>
       `;
     }
 
-    // --- 4. REŽIMY ZKOUŠENÍ ---
     function renderZkouseniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
         <button onclick="nav('topicSelect', 'zkouseni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
-        <h2 class="text-2xl font-black mb-4">Zkoušení a testy</h2>
+        <h2 class="text-2xl font-black mb-1">Zkoušení a testy</h2>
+        <p class="text-xs text-purple-400 mb-4 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
         <div class="grid gap-3">
           <button onclick="startFlashcards()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">🎴</span>
-            <div><h3 class="font-bold">Flashcards (Kartičky)</h3><p class="text-xs text-slate-400">Otázka na líci, odpověď na rubu.</p></div>
+            <span class="text-2xl">🎴</span><div><h3 class="font-bold">Flashcards (Kartičky)</h3><p class="text-xs text-slate-400">Otázka na líci, odpověď na rubu.</p></div>
           </button>
           <button onclick="runAiTest()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">📝</span>
-            <div><h3 class="font-bold">Test nanečisto</h3><p class="text-xs text-slate-400">Vygeneruje otázky a na konci tě oznámkuje.</p></div>
+            <span class="text-2xl">📝</span><div><h3 class="font-bold">Test nanečisto</h3><p class="text-xs text-slate-400">Vygeneruje otázky a na konci tě oznámkuje.</p></div>
           </button>
           <button onclick="startOralExam()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
-            <span class="text-2xl">🎙️</span>
-            <div><h3 class="font-bold text-purple-400">Ústní zkoušení (v textu)</h3><p class="text-xs text-slate-400">Učitel tě zkouší u tabule, reaguje na tvé odpovědi.</p></div>
+            <span class="text-2xl">🎙️</span><div><h3 class="font-bold text-purple-400">Ústní zkoušení (v textu)</h3><p class="text-xs text-slate-400">Učitel tě zkouší u tabule, reaguje na tvé odpovědi.</p></div>
           </button>
         </div>
       `;
     }
 
-    // --- 5. VKLÁDÁNÍ LÁTKY ---
+    async function executeGeminiWithFallback(payload) {
+      const key = state.apiKey || HARDCODED_GEMINI_KEY;
+      let lastErr = null;
+
+      for (const model of CASCADE_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.status === 503 || (data && data.error && (data.error.code === 503 || data.error.message?.includes('high demand')))) {
+            lastErr = new Error(`Model ${model} je přetížený.`);
+            continue;
+          }
+          if (res.status === 404) continue;
+          if (!res.ok || (data && data.error)) {
+            throw new Error(data && data.error ? data.error.message : `Chyba HTTP ${res.status}`);
+          }
+          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+            throw new Error('Google nevrátil žádný text.');
+          }
+          state.lastModel = model;
+          return { text: data.candidates[0].content.parts[0].text, model };
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      }
+      throw lastErr || new Error('Spojení se nezdařilo. Zkus to za chvíli.');
+    }
+
+    async function runAiStudy(type) {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji studijní podklady...</p></div>`;
+      let sys = "Jsi špičkový lektor. Používej přehledné odrážky a tučné písmo.";
+      let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
+      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách.";
+      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí přirovnání.";
+      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a vzorce.";
+
+      try {
+        const { text: response } = await executeGeminiWithFallback({
+          system_instruction: { parts: [{ text: sys }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        });
+        nav('result', { title: 'Učení', content: response });
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('uceniHub');
+      }
+    }
+
+    async function startFlashcards() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji kartičky...</p></div>`;
+      try {
+        const { text: raw } = await executeGeminiWithFallback({
+          contents: [{ parts: [{ text: `Vytvoř 8 kartiček k této látce. Vrať POUZE validní JSON pole objektů s klíči 'q' a 'a':\n${getCombinedNotes()}` }] }],
+          generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
+        });
+        let cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+        let parsed = JSON.parse(cleaned);
+        let cards = Array.isArray(parsed) ? parsed : Object.values(parsed).find(v => Array.isArray(v)) || [];
+        nav('flashcards', cards);
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    function renderFlashcardsView(cards) {
+      let cur = 0, flipped = false;
+      function draw() {
+        const c = cards[cur] || { q: 'Žádná otázka', a: 'Žádná odpověď' };
+        document.getElementById('app').innerHTML = `
+          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+          <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Kartička ${cur + 1} z ${cards.length}</h2></div>
+          <div onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
+            <p class="text-lg font-semibold text-slate-100">${flipped ? (c.a || c.odpoved) : (c.q || c.otazka)}</p>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
+            <button onclick="next()" class="flex-1 py-3 bg-purple-600 rounded-xl font-bold text-sm">Další</button>
+          </div>
+        `;
+      }
+      window.flip = () => { flipped = !flipped; draw(); };
+      window.prev = () => { if(cur > 0) { cur--; flipped = false; draw(); } };
+      window.next = () => { if(cur < cards.length - 1) { cur++; flipped = false; draw(); } else { alert('Prošel jsi všechny kartičky!'); nav('zkouseniHub'); } };
+      draw();
+    }
+
+    async function runAiTest() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji zkušební test...</p></div>`;
+      try {
+        const { text: response } = await executeGeminiWithFallback({
+          contents: [{ parts: [{ text: `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj správné odpovědi:\n${getCombinedNotes()}` }] }],
+          generationConfig: { temperature: 0.3 }
+        });
+        state.currentTestPrompt = response;
+        app.innerHTML = `
+          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+          <h2 class="text-2xl font-black mb-3">Test nanečisto</h2>
+          <div class="bg-cardBg p-4 rounded-xl border border-slate-800 text-sm whitespace-pre-wrap text-slate-300 mb-4">${response}</div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpovědi:</label>
+          <textarea id="studentAnswers" rows="5" placeholder="Napiš sem své odpovědi..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-4"></textarea>
+          <button onclick="evaluateTestSubmit()" class="w-full py-4 bg-purple-600 font-bold rounded-xl active:scale-98">Vyhodnotit a oznámkovat</button>
+        `;
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    async function evaluateTestSubmit() {
+      const answers = document.getElementById('studentAnswers')?.value;
+      if (!answers) { alert('Nejprve napiš své odpovědi!'); return; }
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Opravuji test a počítám známku...</p></div>`;
+      const prompt = `TEST:\n${state.currentTestPrompt}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
+      try {
+        const { text: evaluation } = await executeGeminiWithFallback({
+          system_instruction: { parts: [{ text: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby." }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2 }
+        });
+        nav('result', { title: 'Výsledek testu', content: evaluation });
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    function startOralExam() {
+      state.oralExamHistory = [{ role: 'model', text: 'Dobrý den. Pojďme k tabuli. Co mi dokážeš říct k prvnímu z vybraných témat?' }];
+      nav('oralExam');
+    }
+
+    function renderOralExamView() {
+      const app = document.getElementById('app');
+      let chatMsgs = state.oralExamHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-purple-900/30 border border-purple-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <span class="block text-[10px] font-bold text-slate-400 mb-1">${m.role === 'model' ? '👨‍🏫 Učitel' : '🧑‍🎓 Ty'}</span>
+          <p class="whitespace-pre-wrap">${m.text}</p>
+        </div>
+      `).join('');
+      app.innerHTML = `
+        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Ukončit zkoušení</button>
+        <h2 class="text-xl font-bold mb-3">Ústní zkoušení</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto pr-1">${chatMsgs}</div>
+        <div class="flex gap-2">
+          <input id="oralInput" type="text" placeholder="Tvoje odpověď..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendOralAnswer()">
+          <button onclick="sendOralAnswer()" class="px-4 py-3 bg-purple-600 rounded-xl font-bold text-sm">Odpovědět</button>
+        </div>
+      `;
+    }
+
+    async function sendOralAnswer() {
+      const input = document.getElementById('oralInput');
+      const val = input?.value.trim();
+      if (!val) return;
+      state.oralExamHistory.push({ role: 'user', text: val });
+      renderOralExamView();
+      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
+      try {
+        const { text: reply } = await executeGeminiWithFallback({
+          system_instruction: { parts: [{ text: "Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku." }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        });
+        state.oralExamHistory.push({ role: 'model', text: reply });
+        renderOralExamView();
+      } catch(e) { alert(e.message); }
+    }
+
+    function renderChatView() {
+      const app = document.getElementById('app');
+      let msgs = state.chatHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-blue-900/30 border border-blue-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <p class="whitespace-pre-wrap">${m.text}</p>
+        </div>
+      `).join('');
+      app.innerHTML = `
+        <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+        <h2 class="text-xl font-bold mb-3">Doučovatel</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných kapitol...</p>'}</div>
+        <div class="flex gap-2">
+          <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button onclick="sendChatMessage()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-sm">Odeslat</button>
+        </div>
+      `;
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const val = input?.value.trim();
+      if (!val) return;
+      state.chatHistory.push({ role: 'user', text: val });
+      renderChatView();
+      try {
+        const { text: reply } = await executeGeminiWithFallback({
+          system_instruction: { parts: [{ text: "Jsi trpělivý osobní lektor. Odpovídej věcně a stručně." }] },
+          contents: [{ parts: [{ text: `POZNÁMKY:\n${getCombinedNotes()}\n\nDOTAZ: ${val}` }] }],
+          generationConfig: { temperature: 0.3 }
+        });
+        state.chatHistory.push({ role: 'model', text: reply });
+        renderChatView();
+      } catch(e) { alert(e.message); }
+    }
+
+    function renderOutputView({ title, content }) {
+      document.getElementById('app').innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black mb-4">${title}</h2>
+        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm whitespace-pre-wrap leading-relaxed text-slate-200">${content}</div>
+        <button onclick="nav('home')" class="w-full mt-5 py-3.5 bg-slate-800 rounded-xl font-bold text-sm">Hotovo</button>
+      `;
+    }
+
     function renderVkladani() {
       const app = document.getElementById('app');
       let subOptions = state.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black">Vložit celý sešit</h2>
         <p class="text-slate-400 text-xs mb-5">AI sama rozpozná nadpisy a rozdělí sešit na kapitoly.</p>
-
         <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
           <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">1. Předmět</label>
@@ -401,20 +579,9 @@
             ` : ''}
             <input id="inputSubName" type="text" placeholder="Zadej název předmětu (např. Dějepis)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 ${state.subjects.length > 0 ? 'hidden' : ''}">
           </div>
-
           <div class="pt-3 border-t border-slate-800">
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Možnost A: Vybrat fotky sešitu</label>
-            <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer">
-              <span class="text-3xl">📸</span>
-              <span class="text-sm font-bold mt-2 text-blue-400">Vybrat fotky sešitu</span>
-              <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
-            </label>
-          </div>
-
-          <div class="pt-3 border-t border-slate-800">
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit celý sešit z Apple Notes</label>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Vložit text z Apple Notes</label>
             <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
-            
             <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
               🚀 Nechat AI rozdělit sešit na témata
             </button>
@@ -426,12 +593,8 @@
     function toggleCustomSub(selectEl) {
       const input = document.getElementById('inputSubName');
       if (selectEl && input) {
-        if (selectEl.value === '__NEW__') {
-          input.classList.remove('hidden');
-          input.focus();
-        } else {
-          input.classList.add('hidden');
-        }
+        if (selectEl.value === '__NEW__') { input.classList.remove('hidden'); input.focus(); }
+        else { input.classList.add('hidden'); }
       }
     }
 
@@ -443,419 +606,45 @@
       return '';
     }
 
-    // --- KASKÁDA PROTI PŘETÍŽENÍ GOOGLU ---
-    async function executeGeminiWithFallback(payload) {
-      const key = (state.apiKey || HARDCODED_GEMINI_KEY).trim();
-      let lastError = null;
-
-      for (const model of CASCADE_MODELS) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await res.json();
-
-          const isHighDemand = res.status === 503 ||
-            (data && data.error && (data.error.code === 503 || data.error.status === 'UNAVAILABLE' || (data.error.message && data.error.message.includes('high demand'))));
-
-          if (isHighDemand) {
-            console.warn(`Model ${model} je přetížený, zkouším záložní...`);
-            lastError = new Error(`Model ${model} je přetížený.`);
-            continue;
-          }
-
-          if (res.status === 404 || (data && data.error && data.error.code === 404)) {
-            continue;
-          }
-
-          if (!res.ok || (data && data.error)) {
-            const errorDetail = data && data.error ? data.error.message : `Chyba HTTP ${res.status}`;
-            throw new Error(errorDetail);
-          }
-
-          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            throw new Error('Google nevrátil žádný text.');
-          }
-
-          state.lastActiveModel = model;
-          return { text: data.candidates[0].content.parts[0].text, model };
-        } catch (err) {
-          if (err.message && err.message.includes('přetížený')) {
-            lastError = err;
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      throw lastError || new Error('Všechny záložní servery Googlu jsou právě teď přetížené. Zkus to za 1 minutu.');
-    }
-
-    function extractTopicsList(rawText) {
-      let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-      let parsed = JSON.parse(cleaned);
-
-      if (Array.isArray(parsed)) return parsed;
-      if (parsed && typeof parsed === 'object') {
-        for (let k of Object.keys(parsed)) {
-          if (Array.isArray(parsed[k])) return parsed[k];
-        }
-        if (parsed.title || parsed.content) return [parsed];
-      }
-      return [];
-    }
-
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
       const fullText = textArea ? textArea.value.trim() : '';
-
-      if (!subName) { alert('Nejprve nahoře zadej nebo vyber předmět (např. Dějepis)!'); return; }
+      if (!subName) { alert('Vyber nebo zadej předmět!'); return; }
       if (!fullText) { alert('Vlož text sešitu!'); return; }
-
       const btn = document.getElementById('saveTextBtn');
-      if (btn) {
-        btn.innerText = '⏳ AI čte sešit a dělí ho podle nadpisů...';
-        btn.disabled = true;
-      }
+      if (btn) { btn.innerText = '⏳ AI dělí sešit...'; btn.disabled = true; }
 
       const payload = {
-        system_instruction: {
-          parts: [{ text: "Jsi asistent pro analýzu školních sešitů. Rozděl zadaný text na témata podle hlavních nadpisů. Vrať VÝHRADNĚ validní JSON pole objektů s klíči 'title' a 'content'. Příklad: [{\"title\":\"1. Nadpis\",\"content\":\"text poznámek...\"}]" }]
-        },
+        system_instruction: { parts: [{ text: "Rozděl zadaný text sešitu na témata podle hlavních nadpisů. Vrať VÝHRADNĚ validní JSON pole objektů s klíči 'title' a 'content'. Příklad: [{\"title\":\"1. Nadpis\",\"content\":\"text poznámek...\"}]" }] },
         contents: [{ parts: [{ text: `Předmět: ${subName}\n\n${fullText}` }] }],
-        generationConfig: {
-          temperature: 0.2,
-          response_mime_type: "application/json"
-        }
+        generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
       };
 
       try {
-        const { text: raw, model } = await executeGeminiWithFallback(payload);
-        const parsedTopics = extractTopicsList(raw);
-
-        if (!parsedTopics || parsedTopics.length === 0) {
-          throw new Error('AI nenašla v textu žádné nadpisy.');
-        }
-
-        await saveExtractedTopics(subName, parsedTopics);
-      } catch (err) {
-        alert('CHYBA: ' + err.message);
-        if (btn) {
-          btn.innerText = '🚀 Nechat AI rozdělit sešit na témata';
-          btn.disabled = false;
-        }
-      }
-    }
-
-    async function handleMultipleImages(input) {
-      if (!input || !input.files || input.files.length === 0) return;
-      const subName = getResolvedSubjectName();
-
-      if (!subName) {
-        alert('Nejprve nahoře zadej nebo vyber Předmět!');
-        input.value = '';
-        return;
-      }
-
-      const count = input.files.length;
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="text-center py-20">
-          <div class="animate-spin text-4xl mb-4">🌀</div>
-          <h2 class="text-xl font-bold mb-1">AI čte celý sešit (${count} fotek)...</h2>
-        </div>
-      `;
-
-      try {
-        const fileParts = [];
-        for (let i = 0; i < input.files.length; i++) {
-          const file = input.files[i];
-          const b64 = await readFileAsBase64(file);
-          fileParts.push({ inline_data: { mime_type: file.type, data: b64 } });
-        }
-
-        const payload = {
-          contents: [{
-            parts: [
-              { text: `Předmět: ${subName}. Přečti sešit, najdi nadpisy a rozděl ho na témata. Vrať POUZE validní JSON pole objektů s klíči 'title' a 'content'.` },
-              ...fileParts
-            ]
-          }],
-          generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
-        };
-
         const { text: raw } = await executeGeminiWithFallback(payload);
-        const parsedTopics = extractTopicsList(raw);
-        await saveExtractedTopics(subName, parsedTopics);
+        let cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+        let parsed = JSON.parse(cleaned);
+        let topicsList = Array.isArray(parsed) ? parsed : Object.values(parsed).find(v => Array.isArray(v)) || [];
+        if (!topicsList.length) throw new Error('AI nenašla v textu žádné nadpisy.');
+
+        let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === subName.toLowerCase());
+        if (!sub) { sub = { id: 'sub_' + Date.now(), name: subName, topics: [] }; state.subjects.push(sub); }
+        if (!Array.isArray(sub.topics)) sub.topics = [];
+
+        topicsList.forEach(t => {
+          if (t && (t.title || t.content)) {
+            sub.topics.push({ id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: String(t.title || 'Kapitola').trim(), content: String(t.content || '').trim() });
+          }
+        });
+        
+        await pushToCloud();
+        alert(`🎉 Hotovo! Sešit "${subName}" byl rozdělen na ${topicsList.length} kapitol.`);
+        nav('home');
       } catch (err) {
         alert('CHYBA: ' + err.message);
-        nav('vkladani');
+        if (btn) { btn.innerText = '🚀 Nechat AI rozdělit sešit na témata'; btn.disabled = false; }
       }
-    }
-
-    function readFileAsBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function saveExtractedTopics(subjectName, topicsList) {
-      const cleanSubName = String(subjectName || 'Neznámý předmět').trim();
-
-      let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === cleanSubName.toLowerCase());
-      if (!sub) {
-        sub = { id: 'sub_' + Date.now(), name: cleanSubName, topics: [] };
-        state.subjects.push(sub);
-      }
-      if (!Array.isArray(sub.topics)) sub.topics = [];
-
-      topicsList.forEach(t => {
-        if (t && (t.title || t.content)) {
-          sub.topics.push({
-            id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            title: String(t.title || 'Kapitola').trim(),
-            content: String(t.content || '').trim()
-          });
-        }
-      });
-
-      await pushToCloud();
-      alert(`🎉 Hotovo! Sešit "${cleanSubName}" byl rozdělen na ${topicsList.length} kapitol.`);
-      nav('home');
-    }
-
-    // --- UČENÍ / ZKOUŠENÍ LOGIKA ---
-    async function runAiStudy(type) {
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji látku...</p></div>`;
-
-      let sys = "Jsi špičkový lektor. Používej přehledné odrážky a tučné písmo.";
-      let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
-
-      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách.";
-      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5).";
-      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy.";
-
-      try {
-        const { text: response } = await executeGeminiWithFallback({
-          system_instruction: { parts: [{ text: sys }] },
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 }
-        });
-        nav('result', { title: 'Učení', content: response });
-      } catch(e) {
-        alert(e.message);
-        nav('uceniHub');
-      }
-    }
-
-    async function startFlashcards() {
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji kartičky...</p></div>`;
-
-      try {
-        let { text: raw } = await executeGeminiWithFallback({
-          contents: [{ parts: [{ text: `Vytvoř 8 kartiček k této látce. Vrať POUZE validní JSON pole objektů s klíči 'q' a 'a':\n${getCombinedNotes()}` }] }],
-          generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
-        });
-        const cards = extractTopicsList(raw);
-        nav('flashcards', cards);
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    function renderFlashcardsView(cards) {
-      let cur = 0;
-      let flipped = false;
-
-      function draw() {
-        const c = cards[cur] || { q: 'Žádná otázka', a: 'Žádná odpověď' };
-        document.getElementById('app').innerHTML = `
-          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Kartička ${cur + 1} z ${cards.length}</h2>
-          </div>
-          <div id="cardBox" onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
-            <p class="text-lg font-semibold text-slate-100">${flipped ? (c.a || c.odpoved) : (c.q || c.otazka)}</p>
-          </div>
-          <div class="flex gap-3 mt-6">
-            <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
-            <button onclick="next()" class="flex-1 py-3 bg-purple-600 rounded-xl font-bold text-sm">Další</button>
-          </div>
-        `;
-      }
-
-      window.flip = () => { flipped = !flipped; draw(); };
-      window.prev = () => { if(cur > 0) { cur--; flipped = false; draw(); } };
-      window.next = () => { if(cur < cards.length - 1) { cur++; flipped = false; draw(); } else { alert('Prošel jsi všechny kartičky!'); nav('zkouseniHub'); } };
-      draw();
-    }
-
-    async function runAiTest() {
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji zkušební test...</p></div>`;
-
-      try {
-        const { text: response } = await executeGeminiWithFallback({
-          contents: [{ parts: [{ text: `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj zatím správné odpovědi:\n${getCombinedNotes()}` }] }],
-          generationConfig: { temperature: 0.3 }
-        });
-
-        app.innerHTML = `
-          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-          <h2 class="text-2xl font-black mb-3">Test nanečisto</h2>
-          <div class="bg-cardBg p-4 rounded-xl border border-slate-800 text-sm whitespace-pre-wrap text-slate-300 mb-4">${response}</div>
-          
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpovědi:</label>
-          <textarea id="studentAnswers" rows="5" placeholder="Napiš sem své odpovědi..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-4"></textarea>
-
-          <button onclick="evaluateTest(\`${response.replace(/`/g, "\\`")}\`)" class="w-full py-4 bg-purple-600 font-bold rounded-xl active:scale-98">
-            Vyhodnotit a oznámkovat
-          </button>
-        `;
-      } catch(e) {
-        alert(e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    async function evaluateTest(testQuestions) {
-      const answers = document.getElementById('studentAnswers').value;
-      if (!answers) { alert('Nejprve napiš své odpovědi!'); return; }
-
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Opravuji test a počítám známku...</p></div>`;
-
-      const prompt = `TEST:\n${testQuestions}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
-      
-      try {
-        const { text: evaluation } = await executeGeminiWithFallback({
-          system_instruction: { parts: [{ text: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby." }] },
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2 }
-        });
-        nav('result', { title: 'Výsledek testu', content: evaluation });
-      } catch(e) {
-        alert(e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    function startOralExam() {
-      state.oralExamHistory = [
-        { role: 'model', text: 'Dobrý den. Pojďme k tabuli. Co mi dokážeš říct k prvnímu z vybraných témat?' }
-      ];
-      nav('oralExam');
-    }
-
-    function renderOralExamView() {
-      const app = document.getElementById('app');
-      let chatMsgs = state.oralExamHistory.map(m => `
-        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-purple-900/30 border border-purple-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
-          <span class="block text-[10px] font-bold text-slate-400 mb-1">${m.role === 'model' ? '👨‍🏫 Učitel' : '🧑‍🎓 Ty'}</span>
-          <p class="whitespace-pre-wrap">${m.text}</p>
-        </div>
-      `).join('');
-
-      app.innerHTML = `
-        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Ukončit zkoušení</button>
-        <h2 class="text-xl font-bold mb-3">Ústní zkoušení</h2>
-        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto scrollbar-none pr-1">${chatMsgs}</div>
-
-        <div class="flex gap-2">
-          <input id="oralInput" type="text" placeholder="Tvoje odpověď..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendOralAnswer()">
-          <button onclick="sendOralAnswer()" class="px-4 py-3 bg-purple-600 rounded-xl font-bold text-sm">Odpovědět</button>
-        </div>
-      `;
-    }
-
-    async function sendOralAnswer() {
-      const input = document.getElementById('oralInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      state.oralExamHistory.push({ role: 'user', text: val });
-      renderOralExamView();
-
-      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
-
-      try {
-        const { text: reply } = await executeGeminiWithFallback({
-          system_instruction: { parts: [{ text: "Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku." }] },
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 }
-        });
-        state.oralExamHistory.push({ role: 'model', text: reply });
-        renderOralExamView();
-      } catch(e) {
-        alert(e.message);
-      }
-    }
-
-    function renderChatView() {
-      const app = document.getElementById('app');
-      let msgs = state.chatHistory.map(m => `
-        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-blue-900/30 border border-blue-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
-          <p class="whitespace-pre-wrap">${m.text}</p>
-        </div>
-      `).join('');
-
-      app.innerHTML = `
-        <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-        <h2 class="text-xl font-bold mb-3">Doučovatel</h2>
-        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto scrollbar-none">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných kapitol...</p>'}</div>
-
-        <div class="flex gap-2">
-          <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
-          <button onclick="sendChatMessage()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-sm">Odeslat</button>
-        </div>
-      `;
-    }
-
-    async function sendChatMessage() {
-      const input = document.getElementById('chatInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      state.chatHistory.push({ role: 'user', text: val });
-      renderChatView();
-
-      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nDOTAZ: ${val}`;
-
-      try {
-        const { text: reply } = await executeGeminiWithFallback({
-          system_instruction: { parts: [{ text: "Jsi trpělivý osobní lektor. Odpovídej věcně a stručně." }] },
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 }
-        });
-        state.chatHistory.push({ role: 'model', text: reply });
-        renderChatView();
-      } catch(e) {
-        alert(e.message);
-      }
-    }
-
-    function renderOutputView({ title, content }) {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Zpět na přehled</button>
-        <h2 class="text-2xl font-black mb-4">${title}</h2>
-        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm whitespace-pre-wrap leading-relaxed text-slate-200">
-          ${content}
-        </div>
-        <button onclick="nav('home')" class="w-full mt-5 py-3.5 bg-slate-800 rounded-xl font-bold text-sm">Hotovo</button>
-      `;
     }
 
     function renderManageSubjects() {
@@ -876,7 +665,6 @@
           </div>
         </div>
       `).join('');
-
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-4">Správa sešitů a kapitol</h2>
@@ -885,79 +673,81 @@
     }
 
     async function deleteSubject(id) {
-      if (confirm('Opravdu smazat celý sešit se všemi kapitolami?')) {
-        state.subjects = state.subjects.filter(s => s && s.id !== id);
-        await pushToCloud();
-        renderManageSubjects();
-      }
+      if (confirm('Smazat celý sešit?')) { state.subjects = state.subjects.filter(s => s && s.id !== id); await pushToCloud(); renderManageSubjects(); }
     }
-
     async function deleteTopic(subId, topId) {
       const sub = state.subjects.find(s => s && s.id === subId);
-      if (sub && Array.isArray(sub.topics)) {
-        sub.topics = sub.topics.filter(t => t && t.id !== topId);
-        await pushToCloud();
-        renderManageSubjects();
-      }
+      if (sub && Array.isArray(sub.topics)) { sub.topics = sub.topics.filter(t => t && t.id !== topId); await pushToCloud(); renderManageSubjects(); }
     }
 
-    // --- NASTAVENÍ (KLÍČE JSOU PEVNĚ VLOŽENY) ---
     function renderSettings() {
-      const app = document.getElementById('app');
-
-      app.innerHTML = `
+      document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-emerald-400 mb-4 font-semibold">✅ Všechny klíče jsou napevno propojeny.</p>
-
-        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-4">
-          <label class="block text-xs font-bold text-slate-400 uppercase">1. Gemini API Klíč</label>
-          <input id="keyInput" type="text" value="${state.apiKey}" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-300 font-mono" readonly>
-          
-          <button onclick="testCurrentKey()" class="w-full py-2.5 bg-cyan-600/30 border border-cyan-500 text-cyan-300 font-bold rounded-lg text-xs active:scale-98 transition">
-            🔌 Otestovat a najít volný model
+        <h2 class="text-2xl font-black mb-1">Nastavení a Cloud</h2>
+        <p class="text-xs text-slate-400 mb-4">Uloženo: <b>${state.subjects.length} sešitů</b>, <b>${getTotalTopicsCount()} kapitol</b></p>
+        
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
+          <h3 class="text-xs font-bold text-slate-400 uppercase">Ruční synchronizace (iPad ↔ PC ↔ iPhone)</h3>
+          <button onclick="manualPush()" class="w-full py-3 bg-emerald-600/30 border border-emerald-500 text-emerald-300 font-bold rounded-lg text-xs">
+            ☁️ Odeslat data z tohoto zařízení na GitHub
           </button>
-          <div id="testKeyResult" class="text-xs font-medium mt-1"></div>
+          <button onclick="manualPull()" class="w-full py-3 bg-blue-600/30 border border-blue-500 text-blue-300 font-bold rounded-lg text-xs">
+            🔄 Stáhnout data z GitHubu do tohoto zařízení
+          </button>
+          <div id="syncResult" class="text-xs font-medium"></div>
         </div>
 
-        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-2 mb-4">
-          <label class="block text-xs font-bold text-slate-400 uppercase">2. GitHub Cloud Token</label>
-          <input id="ghTokenInput" type="password" value="${state.ghToken}" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-300 font-mono" readonly>
-        </div>
-
-        <button onclick="clearCorruptedData()" class="w-full py-2 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
-          🧹 Vyčistit lokální sešity v zařízení
+        <button onclick="clearStorage()" class="w-full py-2 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs">
+          🧹 Vyčistit data v tomto zařízení
         </button>
       `;
     }
 
-    async function testCurrentKey() {
-      const resDiv = document.getElementById('testKeyResult');
-      resDiv.innerHTML = '<span class="text-blue-400">⏳ Testuji řetězec modelů...</span>';
-
-      try {
-        const result = await executeGeminiWithFallback({
-          contents: [{ parts: [{ text: "Odpověz jedním slovem: FUNGUJE" }] }]
-        });
-
-        resDiv.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE!</span><br><span class="text-xs text-slate-300">Google odpověděl přes volný model <b>${result.model}</b>: "${result.text.trim()}"</span>`;
-      } catch (err) {
-        resDiv.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba: ${err.message}</span>`;
+    async function manualPush() {
+      const div = document.getElementById('syncResult');
+      div.innerHTML = '<span class="text-blue-400">⏳ Odesílám sešity na GitHub...</span>';
+      const res = await pushToCloud();
+      if (res.success) {
+        div.innerHTML = '<span class="text-emerald-400 font-bold">✅ Data byla úspěšně nahrána na GitHub! Teď budou i na PC a iPhonu.</span>';
+      } else {
+        div.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba nahrávání: ${res.msg}</span>`;
       }
     }
 
-    function clearCorruptedData() {
-      if (confirm('Chceš vyčistit data?')) {
-        localStorage.removeItem('study_data');
-        state.subjects = [];
-        alert('Paměť vyčištěna!');
-        nav('home');
+    async function manualPull() {
+      const div = document.getElementById('syncResult');
+      div.innerHTML = '<span class="text-blue-400">⏳ Stahuji data z GitHubu...</span>';
+      const ok = await pullFromCloud();
+      if (ok) {
+        div.innerHTML = `<span class="text-emerald-400 font-bold">✅ Úspěšně staženo! Nalezeno ${state.subjects.length} sešitů.</span>`;
+        setTimeout(() => nav('home'), 1200);
+      } else {
+        div.innerHTML = '<span class="text-amber-400 font-bold">⚠️ Na GitHubu zatím není žádný uložený sešit. Musíš ho nejprve nahrát z iPadu.</span>';
       }
     }
 
-    // Automatický start a synchronizace
-    pullFromCloud();
-    nav('home');
+    function clearStorage() {
+      if (confirm('Opravdu vymazat?')) { localStorage.removeItem('study_data'); state.subjects = []; alert('Vyčištěno!'); nav('home'); }
+    }
+
+    // --- CHYTRÉ SPUŠTĚNÍ: POKUD ZAŘÍZENÍ NEMÁ DATA, POČKÁ NA CLOUD ---
+    async function initApp() {
+      if (state.subjects.length === 0) {
+        document.getElementById('app').innerHTML = `
+          <div class="text-center py-24">
+            <div class="animate-spin text-4xl mb-4">☁️</div>
+            <h2 class="text-lg font-bold">Stahuji tvoje sešity z cloudu...</h2>
+            <p class="text-xs text-slate-400 mt-1">Synchronizace iPad ↔ PC ↔ iPhone</p>
+          </div>
+        `;
+        await pullFromCloud();
+      } else {
+        pullFromCloud(true);
+      }
+      nav('home');
+    }
+
+    initApp();
   </script>
 </body>
 </html>
