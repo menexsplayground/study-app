@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="cs" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v3.3</title>
+  <title>StudyApp v4.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold border border-emerald-800">v3.3</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40">v4.0 AutoModel</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
@@ -72,7 +72,8 @@
       selectedTopics: [],
       currentMode: null,
       chatHistory: [],
-      oralExamHistory: []
+      oralExamHistory: [],
+      activeModel: 'gemini-2.0-flash'
     };
 
     function setCloudStatus(type, text) {
@@ -191,7 +192,7 @@
       }
     }
 
-    // --- 1. DOMOVSKÁ OBRAZOVKA ---
+    // --- 1. DOMOV ---
     function renderHome() {
       const app = document.getElementById('app');
       const totalCount = getTotalTopicsCount();
@@ -234,7 +235,7 @@
       `;
     }
 
-    // --- 2. VÝBĚR OKRUHŮ ---
+    // --- 2. VÝBĚR TÉMAT ---
     function renderTopicSelect(targetMode) {
       state.currentMode = targetMode;
       const app = document.getElementById('app');
@@ -384,7 +385,7 @@
       `;
     }
 
-    // --- 5. VKLÁDÁNÍ CELÉHO SEŠITU ---
+    // --- 5. VKLÁDÁNÍ LÁTKY ---
     function renderVkladani() {
       const app = document.getElementById('app');
       let subOptions = state.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
@@ -392,7 +393,7 @@
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black">Vložit celý sešit</h2>
-        <p class="text-slate-400 text-xs mb-5">AI sama rozpozná nadpisy a rozdělí sešit na jednotlivé kapitoly.</p>
+        <p class="text-slate-400 text-xs mb-5">AI sama rozpozná nadpisy a rozdělí sešit na kapitoly.</p>
 
         <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
           
@@ -412,7 +413,7 @@
 
           <!-- MOŽNOST A: FOTKY -->
           <div class="pt-3 border-t border-slate-800">
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Možnost A: Vybrat fotky celého sešitu</label>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Možnost A: Vybrat fotky sešitu</label>
             <p class="text-[11px] text-slate-400 mb-2">Můžeš označit i 10–20 fotek najednou v galerii!</p>
             <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer active:scale-98 transition">
               <span class="text-3xl">📸</span>
@@ -461,24 +462,38 @@
       return '';
     }
 
-    // --- CHYTRÉ VOLÁNÍ GEMINI S AUTOMATICKÝM FALLBACKEM MODELŮ ---
+    // --- DYNAMICKÉ ZJIŠTĚNÍ DOSTUPNÉHO MODELU OD GOOGLU ---
+    async function getActiveGeminiModel(key) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.models) {
+            const preferred = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest'];
+            for (let p of preferred) {
+              if (data.models.some(m => m.name === 'models/' + p)) {
+                return p;
+              }
+            }
+            const anyFlash = data.models.find(m => m.name.includes('flash') && m.supportedGenerationMethods?.includes('generateContent'));
+            if (anyFlash) return anyFlash.name.replace('models/', '');
+          }
+        }
+      } catch (e) {}
+      return 'gemini-2.0-flash';
+    }
+
     async function callGeminiApi({ systemPrompt, contents, isJson = false }) {
       const key = (state.apiKey || '').trim();
       if (!key) {
         throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
       }
 
-      // Seznam nejnovějších modelů pro automatické přepnutí
-      const MODELS = [
-        'gemini-2.0-flash',
-        'gemini-2.5-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-flash'
-      ];
-
+      const activeModel = await getActiveGeminiModel(key);
+      const MODELS = [activeModel, 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-latest'];
       let lastError = null;
 
-      for (const model of MODELS) {
+      for (const model of [...new Set(MODELS)]) {
         try {
           const bodyPayload = {
             contents: contents,
@@ -501,9 +516,7 @@
 
           const data = await res.json();
 
-          // Pokud model nebyl nalezen (404), zkus další v pořadí
           if (res.status === 404 || (data && data.error && (data.error.code === 404 || (data.error.message && data.error.message.includes('not found'))))) {
-            console.warn(`Model ${model} nebyl nalezen, zkouším další...`);
             lastError = new Error(data && data.error ? data.error.message : `Model ${model} nebyl nalezen.`);
             continue;
           }
@@ -542,18 +555,12 @@
       let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       let parsed = JSON.parse(cleaned);
 
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
+      if (Array.isArray(parsed)) return parsed;
       if (parsed && typeof parsed === 'object') {
         for (let k of Object.keys(parsed)) {
-          if (Array.isArray(parsed[k])) {
-            return parsed[k];
-          }
+          if (Array.isArray(parsed[k])) return parsed[k];
         }
-        if (parsed.title || parsed.content) {
-          return [parsed];
-        }
+        if (parsed.title || parsed.content) return [parsed];
       }
       return [];
     }
@@ -672,7 +679,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       });
 
       await pushToCloud();
-      alert(`🎉 Hotovo! Sešit "${cleanSubName}" byl rozdělen na ${topicsList.length} kapitol podle nadpisů.`);
+      alert(`🎉 Hotovo! Sešit "${cleanSubName}" byl rozdělen na ${topicsList.length} kapitol.`);
       nav('home');
     }
 
@@ -939,7 +946,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v3.3 - Gemini 2.0 Flash).</p>
+        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v4.0 - AutoModel).</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
