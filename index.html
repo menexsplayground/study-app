@@ -1,0 +1,663 @@
+﻿<!DOCTYPE html>
+<html lang="cs" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Můj Osobní Tutor</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { darkBg: '#090d16', cardBg: '#131b2e' } } }
+    }
+  </script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
+
+  <!-- TOP BAR -->
+  <header class="p-4 pt-10 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/80 backdrop-blur-md sticky top-0 z-50">
+    <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+      🧠 StudyApp
+    </button>
+    <div class="flex gap-2">
+      <button onclick="nav('manage')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">📚 Předměty</button>
+      <button onclick="nav('settings')" class="p-1.5 rounded-lg bg-slate-800 text-slate-300">⚙️</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main id="app" class="flex-1 p-5 max-w-xl mx-auto w-full">
+    <!-- Dyn Content -->
+  </main>
+
+  <script>
+    // State management
+    const state = {
+      apiKey: localStorage.getItem('gemini_key') || '',
+      subjects: JSON.parse(localStorage.getItem('study_data') || '[]'),
+      selectedTopics: [],
+      currentMode: null,
+      chatHistory: [],
+      oralExamHistory: []
+    };
+
+    function saveState() {
+      localStorage.setItem('study_data', JSON.stringify(state.subjects));
+      localStorage.setItem('gemini_key', state.apiKey);
+    }
+
+    // --- NAVIGATION ---
+    function nav(screen, param = null) {
+      const app = document.getElementById('app');
+      app.innerHTML = '';
+
+      if (!state.apiKey && screen !== 'settings') {
+        renderSettings('Pro používání aplikace nejprve vlož svůj Gemini API klíč.');
+        return;
+      }
+
+      switch(screen) {
+        case 'home': renderHome(); break;
+        case 'topicSelect': renderTopicSelect(param); break;
+        case 'uceniHub': renderUceniHub(); break;
+        case 'zkouseniHub': renderZkouseniHub(); break;
+        case 'vkladani': renderVkladani(); break;
+        case 'manage': renderManageSubjects(); break;
+        case 'settings': renderSettings(); break;
+        case 'result': renderOutputView(param); break;
+        case 'chat': renderChatView(); break;
+        case 'flashcards': renderFlashcardsView(param); break;
+        case 'oralExam': renderOralExamView(); break;
+      }
+    }
+
+    // --- 1. HOME SCREEN ---
+    function renderHome() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="mt-4 text-center">
+          <h1 class="text-3xl font-extrabold tracking-tight">Co chceš dnes dělat?</h1>
+          <p class="text-slate-400 text-sm mt-1">Vyber si aktivitu a jdeme na to.</p>
+        </div>
+
+        <div class="grid gap-4 mt-8">
+          <button onclick="nav('topicSelect', 'uceni')" class="p-6 rounded-2xl bg-cardBg border border-blue-500/30 flex items-center gap-4 text-left hover:border-blue-500 active:scale-95 transition">
+            <span class="text-4xl">📖</span>
+            <div>
+              <h2 class="text-xl font-bold text-blue-400">Učit se</h2>
+              <p class="text-slate-400 text-xs mt-0.5">Shrnutí, ELI5, rychlokurz před testem a chat s doučovatelem.</p>
+            </div>
+          </button>
+
+          <button onclick="nav('topicSelect', 'zkouseni')" class="p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left hover:border-purple-500 active:scale-95 transition">
+            <span class="text-4xl">🎯</span>
+            <div>
+              <h2 class="text-xl font-bold text-purple-400">Zkoušet</h2>
+              <p class="text-slate-400 text-xs mt-0.5">Flashcards, test nanečisto nebo simulované ústní zkoušení.</p>
+            </div>
+          </button>
+
+          <button onclick="nav('vkladani')" class="p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
+            <span class="text-4xl">📥</span>
+            <div>
+              <h2 class="text-xl font-bold text-emerald-400">Vkládat látku</h2>
+              <p class="text-slate-400 text-xs mt-0.5">Foťák, fotky z galerie nebo vložení poznámek z Apple Notes.</p>
+            </div>
+          </button>
+        </div>
+      `;
+    }
+
+    // --- 2. MULTI-SELECT OKRUHY LÁTKY ---
+    function renderTopicSelect(targetMode) {
+      state.currentMode = targetMode;
+      const app = document.getElementById('app');
+
+      if (state.subjects.length === 0) {
+        app.innerHTML = `
+          <div class="text-center py-12">
+            <p class="text-slate-400 mb-4">Zatím nemáš uložené žádné předměty ani témata.</p>
+            <button onclick="nav('vkladani')" class="px-5 py-3 rounded-xl bg-emerald-600 font-bold">Vložit první poznámky</button>
+          </div>
+        `;
+        return;
+      }
+
+      let subjectsHtml = '';
+      state.subjects.forEach(sub => {
+        let topicsHtml = '';
+        sub.topics.forEach(top => {
+          const isChecked = state.selectedTopics.some(t => t.id === top.id) ? 'checked' : '';
+          topicsHtml += `
+            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer active:bg-slate-700">
+              <input type="checkbox" value="${top.id}" data-sub="${sub.id}" class="w-5 h-5 accent-blue-500 rounded topic-cb" ${isChecked}>
+              <span class="text-sm font-medium text-slate-200">${top.title}</span>
+            </label>
+          `;
+        });
+
+        subjectsHtml += `
+          <div class="mb-5 bg-cardBg p-4 rounded-2xl border border-slate-800">
+            <h3 class="font-bold text-md text-blue-400 mb-3">${sub.name}</h3>
+            <div class="grid gap-2">${topicsHtml || '<p class="text-xs text-slate-500">Žádná témata</p>'}</div>
+          </div>
+        `;
+      });
+
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Zpět na úvod</button>
+        <h2 class="text-2xl font-black">Vyber okruhy látky</h2>
+        <p class="text-slate-400 text-xs mb-5">Zaškrtni přesně ty témata, ze kterých chceš ${targetMode === 'uceni' ? 'se učit' : 'být zkoušen'}.</p>
+        
+        <div>${subjectsHtml}</div>
+
+        <div class="sticky bottom-4 pt-2">
+          <button onclick="confirmSelectedTopics()" class="w-full py-4 rounded-xl bg-blue-600 font-bold shadow-lg shadow-blue-600/30 active:scale-98 transition">
+            Pokračovat s vybranými tématy
+          </button>
+        </div>
+      `;
+    }
+
+    function confirmSelectedTopics() {
+      const checkedBoxes = document.querySelectorAll('.topic-cb:checked');
+      if (checkedBoxes.length === 0) {
+        alert('Vyber alespoň jeden okruh látky!');
+        return;
+      }
+
+      state.selectedTopics = [];
+      checkedBoxes.forEach(cb => {
+        const subId = cb.getAttribute('data-sub');
+        const topId = cb.value;
+        const sub = state.subjects.find(s => s.id === subId);
+        const top = sub.topics.find(t => t.id === topId);
+        state.selectedTopics.push(top);
+      });
+
+      if (state.currentMode === 'uceni') nav('uceniHub');
+      else nav('zkouseniHub');
+    }
+
+    function getCombinedNotes() {
+      return state.selectedTopics.map(t => `### Téma: ${t.title}\n${t.content}`).join('\n\n');
+    }
+
+    // --- 3. MENU UČENÍ ---
+    function renderUceniHub() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <button onclick="nav('topicSelect', 'uceni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
+        <h2 class="text-2xl font-black">Režimy učení</h2>
+        <p class="text-xs text-blue-400 mb-5 font-semibold">Vybráno témat: ${state.selectedTopics.length}</p>
+
+        <div class="grid gap-3">
+          <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">📑</span>
+            <div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
+          </button>
+
+          <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">👶</span>
+            <div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Jednoduché metafory ze života.</p></div>
+          </button>
+
+          <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">⚡</span>
+            <div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: klíčové pojmy a tahák.</p></div>
+          </button>
+
+          <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">💬</span>
+            <div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Ptej se na nejasnosti z těchto témat.</p></div>
+          </button>
+        </div>
+      `;
+    }
+
+    // --- 4. MENU ZKOUŠENÍ ---
+    function renderZkouseniHub() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <button onclick="nav('topicSelect', 'zkouseni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
+        <h2 class="text-2xl font-black">Zkoušení a testy</h2>
+        <p class="text-xs text-purple-400 mb-5 font-semibold">Vybráno témat: ${state.selectedTopics.length}</p>
+
+        <div class="grid gap-3">
+          <button onclick="startFlashcards()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">🎴</span>
+            <div><h3 class="font-bold">Flashcards (Otáčecí kartičky)</h3><p class="text-xs text-slate-400">Otázka na líci, odpověď na rubu.</p></div>
+          </button>
+
+          <button onclick="runAiTest()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">📝</span>
+            <div><h3 class="font-bold">Test nanečisto</h3><p class="text-xs text-slate-400">Vygeneruje 4 otázky a následně tě oznámkuje.</p></div>
+          </button>
+
+          <button onclick="startOralExam()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left">
+            <span class="text-2xl">🎙️</span>
+            <div><h3 class="font-bold text-purple-400">Ústní zkoušení (v textu)</h3><p class="text-xs text-slate-400">Učitel tě zkouší u tabule, reaguje na tvé odpovědi.</p></div>
+          </button>
+        </div>
+      `;
+    }
+
+    // --- 5. VKLÁDÁNÍ LÁTKY ---
+    function renderVkladani() {
+      const app = document.getElementById('app');
+      let subOptions = state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black">Vložit novou látku</h2>
+        <p class="text-slate-400 text-xs mb-5">Přidej pracovní list nebo text z poznámek.</p>
+
+        <div class="space-y-4 bg-cardBg p-4 rounded-2xl border border-slate-800">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Předmět</label>
+            <div class="flex gap-2">
+              <select id="inputSub" class="bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm flex-1 text-slate-200">
+                ${subOptions}
+              </select>
+              <button onclick="createNewSubjectPrompt()" class="px-3 bg-slate-700 rounded-lg text-xs font-bold">+ Nový předmět</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Název tématu / okruhu</label>
+            <input id="inputTopicTitle" type="text" placeholder="např. Fotosyntéza nebo 1. světová válka" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+          </div>
+
+          <div class="pt-3 border-t border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-3">Způsob vložení</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex flex-col items-center justify-center p-4 bg-slate-800/80 border border-slate-700 rounded-xl cursor-pointer active:scale-95">
+                <span class="text-2xl">📷</span>
+                <span class="text-xs font-bold mt-1">Fotoaparát</span>
+                <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleImageInput(this)">
+              </label>
+
+              <label class="flex flex-col items-center justify-center p-4 bg-slate-800/80 border border-slate-700 rounded-xl cursor-pointer active:scale-95">
+                <span class="text-2xl">🖼️</span>
+                <span class="text-xs font-bold mt-1">Galerie</span>
+                <input type="file" accept="image/*" class="hidden" onchange="handleImageInput(this)">
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nebo vlož text z Apple Notes</label>
+            <textarea id="inputTextNotes" rows="5" placeholder="Zkopíruj text z Apple Notes a vlož sem..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200"></textarea>
+          </div>
+
+          <button onclick="saveManualNotes()" id="saveBtn" class="w-full py-3.5 bg-emerald-600 font-bold rounded-xl active:scale-98 transition">
+            💾 Uložit téma do paměti
+          </button>
+        </div>
+      `;
+    }
+
+    function createNewSubjectPrompt() {
+      const name = prompt('Zadej název nového předmětu (např. Dějepis):');
+      if (name) {
+        state.subjects.push({ id: 'sub_' + Date.now(), name, topics: [] });
+        saveState();
+        renderVkladani();
+      }
+    }
+
+    function saveManualNotes() {
+      const subId = document.getElementById('inputSub')?.value;
+      const title = document.getElementById('inputTopicTitle').value.trim();
+      const content = document.getElementById('inputTextNotes').value.trim();
+
+      if (!subId) { alert('Nejprve vytvoř předmět!'); return; }
+      if (!title || !content) { alert('Zadej název tématu i samotný text!'); return; }
+
+      const sub = state.subjects.find(s => s.id === subId);
+      sub.topics.push({ id: 'top_' + Date.now(), title, content });
+      saveState();
+      alert('Téma bylo úspěšně uloženo!');
+      nav('home');
+    }
+
+    async function handleImageInput(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const subId = document.getElementById('inputSub')?.value;
+      const title = document.getElementById('inputTopicTitle').value.trim();
+
+      if (!subId || !title) {
+        alert('Nejprve vyber předmět a vyplň název tématu nahoře!');
+        return;
+      }
+
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.innerText = 'Čtu a analyzuji fotku pomocí Gemini...';
+      saveBtn.disabled = true;
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Data = reader.result.split(',')[1];
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: "Přepiš z tohoto pracovního listu nebo sešitu veškeré učební poznámky a fakta do strukturovaného textu. Vynech zbytečnou grafiku, soustřeď se na znalosti a definice." },
+                  { inline_data: { mime_type: file.type, data: base64Data } }
+                ]
+              }]
+            })
+          });
+          const data = await res.json();
+          const extractedText = data.candidates[0].content.parts[0].text;
+          
+          const sub = state.subjects.find(s => s.id === subId);
+          sub.topics.push({ id: 'top_' + Date.now(), title, content: extractedText });
+          saveState();
+          alert('Pracovní list byl přečten a uložen do tématu!');
+          nav('home');
+        } catch(err) {
+          alert('Chyba při čtení fotky: ' + err.message);
+          saveBtn.innerText = '💾 Uložit téma do paměti';
+          saveBtn.disabled = false;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- GEMINI HELPER ---
+    async function callGemini(systemPrompt, userPrompt) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userPrompt }] }],
+          generationConfig: { temperature: 0.4 }
+        })
+      });
+      const data = await res.json();
+      return data.candidates[0].content.parts[0].text;
+    }
+
+    // --- LOGIKA UČENÍ ---
+    async function runAiStudy(type) {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji látku...</p></div>`;
+
+      let sys = "Jsi špičkový lektor. Používej přehledné odrážky a tučné písmo.";
+      let prompt = `Podklady z poznámek:\n${getCombinedNotes()}\n\n`;
+
+      if (type === 'shrnuti') {
+        prompt += "Vytvoř jasné, logické a strukturované shrnutí této látky v odrážkách.";
+      } else if (type === 'eli5') {
+        prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5). Používej vtipné analogie a metafory ze života.";
+      } else if (type === 'predzvonici') {
+        prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější definice, vzorce, jména a chytáky, na které se učitelé ptají.";
+      }
+
+      const response = await callGemini(sys, prompt);
+      nav('result', { title: 'Učení', content: response });
+    }
+
+    // --- FLASHCARDS ---
+    async function startFlashcards() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Generuji kartičky...</p></div>`;
+
+      const sys = "Vrať POUZE validní JSON pole objektů s klíči 'q' (otázka) a 'a' (stručná odpověď). Příklad: [{\"q\":\"Otázka\",\"a\":\"Odpověď\"}]";
+      const user = `Z následujících poznámek vytvoř 8 nejdůležitějších kartiček:\n${getCombinedNotes()}`;
+
+      try {
+        let raw = await callGemini(sys, user);
+        raw = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+        const cards = JSON.parse(raw);
+        nav('flashcards', cards);
+      } catch(e) {
+        alert('Chyba při tvorbě kartiček, zkus to znovu.');
+        nav('zkouseniHub');
+      }
+    }
+
+    function renderFlashcardsView(cards) {
+      let cur = 0;
+      let flipped = false;
+
+      function draw() {
+        const c = cards[cur];
+        document.getElementById('app').innerHTML = `
+          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Kartička ${cur + 1} z ${cards.length}</h2>
+          </div>
+          <div id="cardBox" onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
+            <p class="text-lg font-semibold text-slate-100">${flipped ? c.a : c.q}</p>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
+            <button onclick="next()" class="flex-1 py-3 bg-purple-600 rounded-xl font-bold text-sm">Další</button>
+          </div>
+        `;
+      }
+
+      window.flip = () => { flipped = !flipped; draw(); };
+      window.prev = () => { if(cur > 0) { cur--; flipped = false; draw(); } };
+      window.next = () => { if(cur < cards.length - 1) { cur++; flipped = false; draw(); } else { alert('Prošel jsi všechny kartičky!'); nav('zkouseniHub'); } };
+      draw();
+    }
+
+    // --- TEST NANEČISTO ---
+    async function runAiTest() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Připravuji zkušební test...</p></div>`;
+
+      const sys = "Vytvoř zkušební test o 4 otázkách k následující látce. Napiš otázky a neuváděj zatím správné odpovědi.";
+      const response = await callGemini(sys, getCombinedNotes());
+
+      app.innerHTML = `
+        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+        <h2 class="text-2xl font-black mb-3">Test nanečisto</h2>
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 text-sm whitespace-pre-wrap text-slate-300 mb-4">${response}</div>
+        
+        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpovědi:</label>
+        <textarea id="studentAnswers" rows="5" placeholder="Napiš sem své odpovědi (1..., 2...)..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-4"></textarea>
+
+        <button onclick="evaluateTest(\`${response.replace(/`/g, "\\`")}\`)" class="w-full py-4 bg-purple-600 font-bold rounded-xl active:scale-98">
+          Vyhodnotit a oznámkovat
+        </button>
+      `;
+    }
+
+    async function evaluateTest(testQuestions) {
+      const answers = document.getElementById('studentAnswers').value;
+      if (!answers) { alert('Nejprve napiš své odpovědi!'); return; }
+
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">🌀</div><p class="text-sm text-slate-400">Opravuji test a počítám známku...</p></div>`;
+
+      const sys = "Jsi spravedlivý učitel. Zhodnoť odpovědi studenta na test, dej mu známku (1 až 5) a u každé chyby vysvětli, jak zní správná odpověď.";
+      const prompt = `TEST:\n${testQuestions}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
+      
+      const evaluation = await callGemini(sys, prompt);
+      nav('result', { title: 'Výsledek testu', content: evaluation });
+    }
+
+    // --- ÚSTNÍ ZKOUŠENÍ ---
+    function startOralExam() {
+      state.oralExamHistory = [
+        { role: 'model', text: 'Dobrý den. Pojďme k tabuli. Začneme první otázkou z tvých vybraných témat: Co mi dokážeš říct o základním principu této látky?' }
+      ];
+      nav('oralExam');
+    }
+
+    function renderOralExamView() {
+      const app = document.getElementById('app');
+      let chatMsgs = state.oralExamHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-purple-900/30 border border-purple-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <span class="block text-[10px] font-bold text-slate-400 mb-1">${m.role === 'model' ? '👨‍🏫 Zkoušející učitel' : '🧑‍🎓 Ty'}</span>
+          <p class="whitespace-pre-wrap">${m.text}</p>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Ukončit zkoušení</button>
+        <h2 class="text-xl font-bold mb-3">Ústní zkoušení</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto scrollbar-none pr-1">${chatMsgs}</div>
+
+        <div class="flex gap-2">
+          <input id="oralInput" type="text" placeholder="Tvoje odpověď..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendOralAnswer()">
+          <button onclick="sendOralAnswer()" class="px-4 py-3 bg-purple-600 rounded-xl font-bold text-sm">Odpovědět</button>
+        </div>
+      `;
+    }
+
+    async function sendOralAnswer() {
+      const input = document.getElementById('oralInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      state.oralExamHistory.push({ role: 'user', text: val });
+      renderOralExamView();
+
+      const sys = "Jsi přísný ale férový učitel u tabule. V 2-3 větách zhodnoť odpověď a hned polož další návodnou nebo doplňující otázku.";
+      const prompt = `POZNÁMKY:\n${getCombinedNotes()}\n\nHISTORIE ZKOUŠENÍ:\n${state.oralExamHistory.map(m => m.role + ': ' + m.text).join('\n')}`;
+
+      const reply = await callGemini(sys, prompt);
+      state.oralExamHistory.push({ role: 'model', text: reply });
+      renderOralExamView();
+    }
+
+    // --- DOUČOVATEL CHAT ---
+    function renderChatView() {
+      const app = document.getElementById('app');
+      let msgs = state.chatHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'model' ? 'bg-blue-900/30 border border-blue-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <p class="whitespace-pre-wrap">${m.text}</p>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+        <h2 class="text-xl font-bold mb-3">Doučovatel k vybraným tématům</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto scrollbar-none">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných okruhů...</p>'}</div>
+
+        <div class="flex gap-2">
+          <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button onclick="sendChatMessage()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-sm">Odeslat</button>
+        </div>
+      `;
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      state.chatHistory.push({ role: 'user', text: val });
+      renderChatView();
+
+      const sys = "Jsi trpělivý osobní lektor. Odpovídej věcně, stručně a používej analogie.";
+      const prompt = `POZNÁMKY STUDENTA:\n${getCombinedNotes()}\n\nDOTAZ: ${val}`;
+      const reply = await callGemini(sys, prompt);
+
+      state.chatHistory.push({ role: 'model', text: reply });
+      renderChatView();
+    }
+
+    // --- VÝSLEDEK ---
+    function renderOutputView({ title, content }) {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Zpět na přehled</button>
+        <h2 class="text-2xl font-black mb-4">${title}</h2>
+        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm whitespace-pre-wrap leading-relaxed text-slate-200">
+          ${content}
+        </div>
+        <button onclick="nav('home')" class="w-full mt-5 py-3.5 bg-slate-800 rounded-xl font-bold text-sm">Hotovo</button>
+      `;
+    }
+
+    // --- SPRÁVA PŘEDMĚTŮ ---
+    function renderManageSubjects() {
+      const app = document.getElementById('app');
+      let html = state.subjects.map(sub => `
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 mb-3">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-bold text-blue-400">${sub.name}</h3>
+            <button onclick="deleteSubject('${sub.id}')" class="text-xs text-red-400">Smazat předmět</button>
+          </div>
+          <div class="space-y-1">
+            ${sub.topics.map(t => `
+              <div class="flex justify-between text-xs p-2 bg-slate-800 rounded">
+                <span>${t.title}</span>
+                <button onclick="deleteTopic('${sub.id}', '${t.id}')" class="text-red-400">Odstranit</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black mb-4">Správa předmětů a témat</h2>
+        ${html || '<p class="text-xs text-slate-500">Žádné předměty.</p>'}
+      `;
+    }
+
+    function deleteSubject(id) {
+      if (confirm('Opravdu smazat celý předmět i s tématy?')) {
+        state.subjects = state.subjects.filter(s => s.id !== id);
+        saveState();
+        renderManageSubjects();
+      }
+    }
+
+    function deleteTopic(subId, topId) {
+      const sub = state.subjects.find(s => s.id === subId);
+      sub.topics = sub.topics.filter(t => t.id !== topId);
+      saveState();
+      renderManageSubjects();
+    }
+
+    // --- SETTINGS ---
+    function renderSettings(msg = '') {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black mb-1">Nastavení</h2>
+        <p class="text-xs text-slate-400 mb-4">Zadej svůj bezplatný Gemini API klíč z Google AI Studio.</p>
+        
+        ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
+
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3">
+          <label class="block text-xs font-bold text-slate-400 uppercase">Gemini API Klíč</label>
+          <input id="keyInput" type="password" value="${state.apiKey}" placeholder="AIzaSy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200">
+          <button onclick="saveKey()" class="w-full py-3 bg-blue-600 font-bold rounded-lg text-sm">Uložit klíč</button>
+        </div>
+      `;
+    }
+
+    function saveKey() {
+      const k = document.getElementById('keyInput').value.trim();
+      if (!k) { alert('Zadej klíč!'); return; }
+      state.apiKey = k;
+      saveState();
+      alert('Klíč uložen!');
+      nav('home');
+    }
+
+    nav('home');
+  </script>
+</body>
+</html>
