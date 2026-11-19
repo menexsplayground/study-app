@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v3.2</title>
+  <title>StudyApp v3.3</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 font-bold border border-blue-800">v3.2</span>
+      <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold border border-emerald-800">v3.3</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60 flex items-center gap-1">
@@ -461,54 +461,83 @@
       return '';
     }
 
-    // --- BEZPEČNÉ VOLÁNÍ GEMINI API ---
-    async function callGemini(systemPrompt, userPrompt, isJson = false) {
+    // --- CHYTRÉ VOLÁNÍ GEMINI S AUTOMATICKÝM FALLBACKEM MODELŮ ---
+    async function callGeminiApi({ systemPrompt, contents, isJson = false }) {
       const key = (state.apiKey || '').trim();
       if (!key) {
-        throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ vpravo nahoře a vlož ho.');
+        throw new Error('Chybí Gemini API klíč! Jdi do Nastavení ⚙️ a vlož ho.');
       }
 
-      const bodyPayload = {
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { temperature: 0.2 }
-      };
+      // Seznam nejnovějších modelů pro automatické přepnutí
+      const MODELS = [
+        'gemini-2.0-flash',
+        'gemini-2.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash'
+      ];
 
-      if (isJson) {
-        bodyPayload.generationConfig.response_mime_type = "application/json";
+      let lastError = null;
+
+      for (const model of MODELS) {
+        try {
+          const bodyPayload = {
+            contents: contents,
+            generationConfig: { temperature: 0.2 }
+          };
+
+          if (systemPrompt) {
+            bodyPayload.system_instruction = { parts: [{ text: systemPrompt }] };
+          }
+
+          if (isJson) {
+            bodyPayload.generationConfig.response_mime_type = "application/json";
+          }
+
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyPayload)
+          });
+
+          const data = await res.json();
+
+          // Pokud model nebyl nalezen (404), zkus další v pořadí
+          if (res.status === 404 || (data && data.error && (data.error.code === 404 || (data.error.message && data.error.message.includes('not found'))))) {
+            console.warn(`Model ${model} nebyl nalezen, zkouším další...`);
+            lastError = new Error(data && data.error ? data.error.message : `Model ${model} nebyl nalezen.`);
+            continue;
+          }
+
+          if (!res.ok || (data && data.error)) {
+            const msg = (data && data.error && data.error.message) ? data.error.message : `Chyba API (${res.status})`;
+            throw new Error(`Google API: ${msg}`);
+          }
+
+          if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
+            throw new Error('Gemini nevrátil žádný text.');
+          }
+
+          return data.candidates[0].content.parts[0].text;
+        } catch (err) {
+          if (err.message && err.message.includes('not found')) {
+            lastError = err;
+            continue;
+          }
+          throw err;
+        }
       }
 
-      let res;
-      try {
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyPayload)
-        });
-      } catch (e) {
-        throw new Error('Chyba připojení k internetu nebo Google API.');
-      }
-
-      let data;
-      try {
-        data = await res.json();
-      } catch (e) {
-        throw new Error(`Google API nevrátilo JSON (status: ${res.status})`);
-      }
-
-      if (!res.ok || (data && data.error)) {
-        const msg = (data && data.error && data.error.message) ? data.error.message : `Chyba API (${res.status})`;
-        throw new Error(`Google API: ${msg}`);
-      }
-
-      if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0] || !data.candidates[0].content.parts[0].text) {
-        throw new Error('Gemini nevrátil žádný text.');
-      }
-
-      return data.candidates[0].content.parts[0].text;
+      throw lastError || new Error('Žádný z Gemini modelů neodpověděl.');
     }
 
-    // Pomocná funkce pro bezpečné rozparsování odpovědi od AI
+    async function callGemini(systemPrompt, userPrompt, isJson = false) {
+      return await callGeminiApi({
+        systemPrompt,
+        contents: [{ parts: [{ text: userPrompt }] }],
+        isJson
+      });
+    }
+
     function extractTopicsListFromRawJson(rawText) {
       let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       let parsed = JSON.parse(cleaned);
@@ -552,7 +581,7 @@
         const parsedTopics = extractTopicsListFromRawJson(raw);
 
         if (!parsedTopics || parsedTopics.length === 0) {
-          throw new Error('AI nenašla v textu žádné nadpisy. Zkus v textu zvýraznit nadpisy.');
+          throw new Error('AI nenašla v textu žádné nadpisy.');
         }
 
         await saveExtractedTopics(subName, parsedTopics);
@@ -573,12 +602,6 @@
       if (!subName) {
         alert('Nejprve nahoře zadej nebo vyber Předmět!');
         input.value = '';
-        return;
-      }
-
-      const key = (state.apiKey || '').trim();
-      if (!key) {
-        alert('Chybí Gemini API klíč v Nastavení ⚙️!');
         return;
       }
 
@@ -606,23 +629,12 @@
 Přečti veškeré poznámky, najdi hlavní nadpisy kapitol a rozděl látku na jednotlivá témata (úseky od nadpisu k nadpisu).
 Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název nadpisu) a 'content' (přepsaný text látky).`;
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }, ...fileParts] }],
-            generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
-          })
+        const raw = await callGeminiApi({
+          contents: [{ parts: [{ text: promptText }, ...fileParts] }],
+          isJson: true
         });
 
-        const data = await res.json();
-        if (!res.ok || (data && data.error)) {
-          throw new Error(data && data.error ? data.error.message : `Chyba API (${res.status})`);
-        }
-
-        let raw = data.candidates[0].content.parts[0].text;
         const parsedTopics = extractTopicsListFromRawJson(raw);
-
         await saveExtractedTopics(subName, parsedTopics);
       } catch (err) {
         alert('Chyba při čtení fotek: ' + (err.message || err));
@@ -927,7 +939,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v3.2).</p>
+        <p class="text-xs text-slate-400 mb-4">Klíče pro AI a Cloud (v3.3 - Gemini 2.0 Flash).</p>
         
         ${msg ? `<div class="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-xs text-amber-200 mb-4">${msg}</div>` : ''}
 
@@ -946,7 +958,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'title' (výstižný název na
         </button>
 
         <button onclick="clearCorruptedData()" class="w-full py-2.5 bg-red-950/40 border border-red-800/60 text-red-300 font-semibold rounded-xl text-xs active:scale-98">
-          🧹 Vyčistit poškozená data z paměti
+          🧹 Vyčistit mezipaměť témat
         </button>
       `;
     }
