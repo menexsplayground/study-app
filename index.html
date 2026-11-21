@@ -12,38 +12,87 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#060911', cardBg: '#0f172a' } } } }
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#050811', cardBg: '#0d1527' } } } }
   </script>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- ZÁHLAVÍ S DALÍHO SLONEM -->
+  <!-- ZÁHLAVÍ S REALISTICKÝM DALÍHO SLONEM -->
   <header class="p-3 pt-6 md:pt-4 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <button onclick="nav('home')" class="flex items-center gap-2 group">
-        <svg class="w-9 h-12 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.45)] transition-transform group-hover:scale-105" viewBox="0 0 100 130" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M34,28 C42,24 58,24 66,28 C68,34 66,42 62,45 L38,45 C34,42 32,34 34,28 Z" fill="currentColor" fill-opacity="0.15" stroke-width="1.8"/>
-          <line x1="36" y1="45" x2="64" y2="45" stroke-width="2"/>
-          <path d="M38,45 Q50,49 62,45" stroke-width="1.5" stroke-dasharray="2 2"/>
-          <path d="M30,34 C24,36 20,42 20,48 C20,55 26,60 35,61 L65,61 C74,60 80,55 80,47 C80,39 74,33 65,32 Z" fill="currentColor" fill-opacity="0.25"/>
-          <path d="M25,40 C19,38 15,44 16,51 C18,55 22,57 26,56" stroke-width="1.8"/>
-          <path d="M19,48 C14,54 11,62 8,65 C6,66 4,64 6,61 C9,56 12,47 16,39 C18,33 22,29 27,31"/>
-          <path d="M21,53 C15,57 9,56 5,51" stroke-width="2" stroke="rgb(254 243 199)"/>
-          <path d="M78,48 C82,53 81,59 82,64" stroke-width="1.5"/>
-          <path d="M30,61 L26,86 L21,124"/>
-          <circle cx="26" cy="86" r="1.8" fill="currentColor"/>
-          <path d="M38,61 L35,88 L31,124"/>
-          <circle cx="35" cy="88" r="1.8" fill="currentColor"/>
-          <path d="M62,61 L65,86 L69,124"/>
-          <circle cx="65" cy="86" r="1.8" fill="currentColor"/>
-          <path d="M71,61 L74,89 L79,124"/>
-          <circle cx="74" cy="89" r="1.8" fill="currentColor"/>
+      <button onclick="nav('home')" class="flex items-center gap-2.5 group">
+        <!-- DETAILNÍ ANATOMICKÝ DALÍHO SLON -->
+        <svg class="w-10 h-14 text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.5)] transition-transform group-hover:scale-105" viewBox="0 0 120 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Zlaté stínování a gradienty -->
+          <defs>
+            <linearGradient id="daliGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fef08a"/>
+              <stop offset="50%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#b45309"/>
+            </linearGradient>
+          </defs>
+          
+          <!-- Hřbetní sedlová drapérie -->
+          <path d="M42,32 C52,28 72,28 82,33 C84,39 82,46 78,50 L46,50 C42,46 40,39 42,32 Z" fill="url(#daliGold)" fill-opacity="0.25" stroke="url(#daliGold)" stroke-width="1.8"/>
+          <line x1="44" y1="50" x2="80" y2="50" stroke="url(#daliGold)" stroke-width="2"/>
+          <path d="M48,50 Q62,55 76,50" stroke="url(#daliGold)" stroke-width="1.5" stroke-dasharray="2 2"/>
+
+          <!-- Mohutné anatomické tělo slona -->
+          <path d="M38,38 C30,40 24,47 24,56 C24,65 32,71 44,72 L80,72 C92,71 100,64 100,54 C100,44 92,36 80,35 C72,34 50,34 38,38 Z" fill="url(#daliGold)" fill-opacity="0.35" stroke="url(#daliGold)" stroke-width="2.2"/>
+          <!-- Svalové vrásky na břiše a bocích -->
+          <path d="M50,68 Q58,62 66,68" stroke="url(#daliGold)" stroke-width="1.2" stroke-opacity="0.7"/>
+          <path d="M72,67 Q78,63 84,67" stroke="url(#daliGold)" stroke-width="1.2" stroke-opacity="0.7"/>
+
+          <!-- Hlava slona, temenní hrbol a oko -->
+          <path d="M36,44 C30,41 24,46 22,54 C21,58 24,62 28,63" stroke="url(#daliGold)" stroke-width="2"/>
+          <circle cx="27" cy="50" r="1.2" fill="#fff" stroke="none"/>
+
+          <!-- Realistické sloní ucho s chrupavkami -->
+          <path d="M38,40 C34,42 32,50 34,58 C36,64 42,65 44,60 C46,54 44,44 38,40 Z" fill="url(#daliGold)" fill-opacity="0.4" stroke="url(#daliGold)" stroke-width="1.8"/>
+          <path d="M36,48 Q39,53 37,58" stroke="url(#daliGold)" stroke-width="1" stroke-opacity="0.6"/>
+
+          <!-- Živý prohnutý chobot směřující vzhůru -->
+          <path d="M22,54 C17,62 14,72 10,76 C7,78 4,75 7,71 C11,64 15,53 19,42 C22,35 27,31 34,34" stroke="url(#daliGold)" stroke-width="2.4"/>
+          <!-- Rýhy na chobotu -->
+          <line x1="16" y1="56" x2="19" y2="58" stroke="url(#daliGold)" stroke-width="1.2"/>
+          <line x1="13" y1="63" x2="16" y2="65" stroke="url(#daliGold)" stroke-width="1.2"/>
+          <line x1="10" y1="70" x2="13" y2="72" stroke="url(#daliGold)" stroke-width="1.2"/>
+
+          <!-- Velký zahnutý slonovinový kel -->
+          <path d="M26,60 C18,65 10,63 5,56 C4,55 6,54 8,56 C14,60 20,59 25,56" fill="#fff" fill-opacity="0.8" stroke="rgb(254 243 199)" stroke-width="2"/>
+
+          <!-- Ocas se střapcem -->
+          <path d="M98,55 C103,62 102,70 103,76" stroke="url(#daliGold)" stroke-width="1.5"/>
+          <path d="M102,75 L104,79 L101,78 Z" fill="url(#daliGold)"/>
+
+          <!-- IKONICKÉ ULTRA DLOUHÉ DALÍHO STILT NOHY S KLOUBY -->
+          <!-- Přední noha 1 -->
+          <path d="M36,72 L31,102 L24,152" stroke="url(#daliGold)" stroke-width="2"/>
+          <circle cx="31" cy="102" r="2.2" fill="url(#daliGold)"/>
+          <circle cx="27" cy="128" r="1.6" fill="url(#daliGold)"/>
+
+          <!-- Přední noha 2 -->
+          <path d="M46,72 L42,105 L37,152" stroke="url(#daliGold)" stroke-width="2"/>
+          <circle cx="42" cy="105" r="2.2" fill="url(#daliGold)"/>
+          <circle cx="39" cy="130" r="1.6" fill="url(#daliGold)"/>
+
+          <!-- Zadní noha 1 -->
+          <path d="M76,72 L80,103 L85,152" stroke="url(#daliGold)" stroke-width="2"/>
+          <circle cx="80" cy="103" r="2.2" fill="url(#daliGold)"/>
+          <circle cx="83" cy="129" r="1.6" fill="url(#daliGold)"/>
+
+          <!-- Zadní noha 2 -->
+          <path d="M88,72 L92,106 L98,152" stroke="url(#daliGold)" stroke-width="2"/>
+          <circle cx="92" cy="106" r="2.2" fill="url(#daliGold)"/>
+          <circle cx="95" cy="131" r="1.6" fill="url(#daliGold)"/>
         </svg>
+
         <span class="text-xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
           StudyApp
         </span>
       </button>
     </div>
+    
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60">☁️ Cloud</span>
       <button onclick="nav('manage')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700">📚 Sešity</button>
@@ -60,61 +109,103 @@
 
     let cachedActiveGroqModel = null;
 
+    // --- GENEROVÁNÍ REALISTICKÉ IKONY NA PLOCHU PRO IPAD/IPHONE ---
     function setupAppleHomeScreenIcon() {
       try {
         const c = document.createElement('canvas');
         c.width = 180; c.height = 180;
         const ctx = c.getContext('2d');
-        const grad = ctx.createRadialGradient(90, 80, 10, 90, 90, 110);
-        grad.addColorStop(0, '#1e293b');
-        grad.addColorStop(1, '#050811');
+        
+        // Hluboké kosmické pozadí
+        const grad = ctx.createRadialGradient(90, 80, 10, 90, 90, 115);
+        grad.addColorStop(0, '#1a2234');
+        grad.addColorStop(1, '#03060d');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 180, 180);
+        
+        // Zlaté lemování
         ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 4;
         ctx.strokeRect(6, 6, 168, 168);
+
+        // Zlatý realistický slon
         ctx.strokeStyle = '#fbbf24';
-        ctx.fillStyle = '#fbbf24';
-        ctx.lineWidth = 3.5;
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.lineWidth = 3.2;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
         ctx.save();
-        ctx.translate(45, 10);
+        ctx.translate(35, 8);
         ctx.scale(0.9, 0.9);
+        
+        // Tělo
         ctx.beginPath();
-        ctx.moveTo(34, 28); ctx.bezierCurveTo(42, 24, 58, 24, 66, 28);
-        ctx.bezierCurveTo(68, 34, 66, 42, 62, 45); ctx.lineTo(38, 45); ctx.closePath();
-        ctx.stroke();
+        ctx.moveTo(38, 38); ctx.bezierCurveTo(30, 40, 24, 47, 24, 56);
+        ctx.bezierCurveTo(24, 65, 32, 71, 44, 72); ctx.lineTo(80, 72);
+        ctx.bezierCurveTo(92, 71, 100, 64, 100, 54); ctx.bezierCurveTo(100, 44, 92, 36, 80, 35); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        
+        // Ucho
         ctx.beginPath();
-        ctx.moveTo(30, 34); ctx.bezierCurveTo(24, 36, 20, 42, 20, 48);
-        ctx.bezierCurveTo(20, 55, 26, 60, 35, 61); ctx.lineTo(65, 61);
-        ctx.bezierCurveTo(74, 60, 80, 55, 80, 47); ctx.bezierCurveTo(80, 39, 74, 33, 65, 32); ctx.closePath();
-        ctx.stroke();
+        ctx.moveTo(38, 40); ctx.bezierCurveTo(34, 42, 32, 50, 34, 58);
+        ctx.bezierCurveTo(36, 64, 42, 65, 44, 60); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        
+        // Chobot
         ctx.beginPath();
-        ctx.moveTo(19, 48); ctx.bezierCurveTo(14, 54, 11, 62, 8, 65);
-        ctx.bezierCurveTo(6, 66, 4, 64, 6, 61); ctx.bezierCurveTo(9, 56, 12, 47, 16, 39);
+        ctx.moveTo(22, 54); ctx.bezierCurveTo(17, 62, 14, 72, 10, 76);
+        ctx.bezierCurveTo(7, 78, 4, 75, 7, 71); ctx.bezierCurveTo(11, 64, 15, 53, 19, 42);
         ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(30, 61); ctx.lineTo(26, 92); ctx.lineTo(21, 142); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(38, 61); ctx.lineTo(35, 94); ctx.lineTo(31, 142); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(62, 61); ctx.lineTo(65, 92); ctx.lineTo(69, 142); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(71, 61); ctx.lineTo(74, 95); ctx.lineTo(79, 142); ctx.stroke();
-        ctx.restore();
 
+        // Kel
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(26, 60); ctx.bezierCurveTo(18, 65, 10, 63, 5, 56); ctx.stroke();
+
+        // Nohy
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.moveTo(36, 72); ctx.lineTo(31, 105); ctx.lineTo(24, 165); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(46, 72); ctx.lineTo(42, 108); ctx.lineTo(37, 165); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(76, 72); ctx.lineTo(80, 106); ctx.lineTo(85, 165); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(88, 72); ctx.lineTo(92, 109); ctx.lineTo(98, 165); ctx.stroke();
+
+        ctx.restore();
         document.getElementById('appleTouchIcon').href = c.toDataURL('image/png');
       } catch(e) {}
     }
 
+    // --- ČISTIČ TEXTU A FORMÁTOVAČ RÁMEČKŮ (BEZ HVĚZDIČEK) ---
     function cleanAndFormatText(text) {
       if (!text) return '';
       let s = String(text);
-      s = s.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-amber-300 mt-4 mb-2">$1</h3>');
-      s = s.replace(/^## (.*$)/gim, '<h2 class="text-xl font-extrabold text-amber-400 mt-5 mb-2">$1</h2>');
-      s = s.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-amber-400 mt-6 mb-3">$1</h1>');
+
+      // 1. PŘEVOD RÁMEČKŮ PRO DETAILNÍ UČENÍ (EXTRA INFORMACE A TIPY NA PAMĚŤ)
+      s = s.replace(/\[(?:EXTRA|DODATEČNÉ INFORMACE|ZAJÍMAVOST|SOUVISLOSTI?):\s*([\s\S]*?)\]/gi,
+        '<div class="my-4 p-4 rounded-2xl bg-blue-950/40 border border-blue-500/50 text-blue-200 text-xs leading-relaxed shadow-lg">' +
+        '<div class="font-bold text-blue-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🔍</span> Dodatečné informace & Hlubší souvislosti</div>$1</div>'
+      );
+
+      s = s.replace(/\[(?:TIP NA PAMĚŤ|MNEMOTECHNIKA|PAMĚŤ|TIP|JAK SI ZAPAMATOVAT):\s*([\s\S]*?)\]/gi,
+        '<div class="my-4 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/50 text-amber-200 text-xs leading-relaxed shadow-lg">' +
+        '<div class="font-bold text-amber-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🧠</span> Mnemotechnická pomůcka & Jak si to zapamatovat</div>$1</div>'
+      );
+
+      // 2. FORMÁTOVÁNÍ ČISTÝCH NADPISŮ (BEZ MŘÍŽEK A HVĚZDIČEK)
+      s = s.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-amber-300 mt-5 mb-2">$1</h3>');
+      s = s.replace(/^## (.*$)/gim, '<h2 class="text-xl font-extrabold text-amber-400 mt-6 mb-2">$1</h2>');
+      s = s.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-amber-400 mt-7 mb-3">$1</h1>');
+      
+      // 3. ODSTRANĚNÍ VŠECH HVĚZDIČEK
       s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-100">$1</strong>');
       s = s.replace(/\*(.*?)\*/g, '<em class="text-slate-300 italic">$1</em>');
       s = s.replace(/\*/g, '');
-      s = s.replace(/^\s*[-•]\s+(.*$)/gim, '<div class="flex items-start gap-2 my-1.5"><span class="text-amber-400 font-bold">•</span><span class="text-slate-200">$1</span></div>');
+
+      // 4. ELEGANTNÍ ODRÁŽKY
+      s = s.replace(/^\s*[-•]\s+(.*$)/gim, '<div class="flex items-start gap-2.5 my-1.5"><span class="text-amber-400 font-bold">•</span><span class="text-slate-200">$1</span></div>');
+
+      // 5. ODŘÁDKOVÁNÍ
       s = s.replace(/\n\n/g, '<div class="h-3"></div>');
       s = s.replace(/\n/g, '<br>');
       return s;
@@ -143,7 +234,7 @@
       currentMode: null,
       chatHistory: [],
       oralExamHistory: [],
-      currentResultData: null
+      currentTestPrompt: ''
     };
 
     function setCloudStatus(type, text) {
@@ -258,7 +349,7 @@
         <div class="grid gap-4 mt-8">
           <button onclick="nav('topicSelect', 'uceni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-amber-500/30 flex items-center gap-4 text-left hover:border-amber-500 active:scale-95 transition">
             <span class="text-4xl">📖</span>
-            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Shrnutí, ELI5, rychlokurz a doučovatel.</p></div>
+            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Detailní učení, shrnutí, ELI5, rychlokurz i doučovatel.</p></div>
           </button>
           <button onclick="nav('topicSelect', 'zkouseni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left hover:border-purple-500 active:scale-95 transition">
             <span class="text-4xl">🎯</span>
@@ -266,7 +357,7 @@
           </button>
           <button onclick="nav('vkladani')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
             <span class="text-4xl">📥</span>
-            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI pozná nadpisy.</p></div>
+            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI bleskově pozná nadpisy.</p></div>
           </button>
         </div>
       `;
@@ -350,6 +441,7 @@
       return state.selectedTopics.map(t => `Téma: ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
+    // --- REŽIMY UČENÍ S NOVÝM DETAILNÍM UČENÍM ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -359,19 +451,31 @@
 
         <div class="mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
           <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">💡 Máš speciální přání pro AI? (volitelné)</label>
-          <input id="customInstructionInput" type="text" placeholder="např. zaměř se na data a letopočty / udělej to extra stručně..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200">
+          <input id="customInstructionInput" type="text" placeholder="např. zaměř se na data a letopočty / udělej to extra podrobné..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200">
         </div>
 
         <div class="grid gap-3">
+          <!-- NOVÁ FUNKCE: DETAILNÍ UČENÍ -->
+          <button onclick="runAiStudy('detailni')" class="p-4 bg-gradient-to-r from-amber-950/40 to-cardBg border border-amber-500/50 rounded-xl flex items-center gap-3 text-left hover:border-amber-400 transition shadow-lg">
+            <span class="text-3xl">🔬</span>
+            <div>
+              <h3 class="font-bold text-amber-300">Detailní učení (Vše + Rámečky & Mnemotechniky)</h3>
+              <p class="text-xs text-slate-300 mt-0.5">Kompletní hloubkový výklad se všemi fakty, souvislostmi v rámečcích a mentálními triky pro zapamatování.</p>
+            </div>
+          </button>
+
           <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">📑</span><div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
           </button>
+          
           <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">👶</span><div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života bez omáčky.</p></div>
           </button>
+          
           <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">⚡</span><div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy a vzorce.</p></div>
           </button>
+          
           <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">💬</span><div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Ptej se na cokoliv z této látky.</p></div>
           </button>
@@ -428,7 +532,6 @@
       return cachedActiveGroqModel;
     }
 
-    // --- ENGINE S AUTOMATICKÝM OPAKOVÁNÍM PŘI 429 RATE LIMITU ---
     async function executeGroqChat(messages, retryCount = 0) {
       const key = state.apiKey.trim();
       const model = await getActiveGroqModel();
@@ -441,9 +544,8 @@
 
       const data = await res.json();
 
-      // Pokud narazíme na Rate Limit (429), automaticky počkáme pár sekund a zkusíme znovu
       if (res.status === 429 && retryCount < 3) {
-        console.warn(`Groq 429 (Rate limit) - čekám ${3 * (retryCount + 1)}s a zkouším znovu...`);
+        console.warn(`Groq 429 Rate limit - čekám ${3.5 * (retryCount + 1)}s...`);
         await new Promise(r => setTimeout(r, 3500 * (retryCount + 1)));
         return await executeGroqChat(messages, retryCount + 1);
       }
@@ -475,7 +577,6 @@
       return [];
     }
 
-    // --- CHYTRÉ ROZDĚLENÍ DLOUHÉHO SEŠITU NA ČÁSTI (CHUNKS) ---
     function splitTextIntoSafeChunks(text, maxChars = 3200) {
       if (text.length <= maxChars) return [text];
       const paragraphs = text.split(/\n\s*\n/);
@@ -493,7 +594,6 @@
       return chunks;
     }
 
-    // --- VKLÁDÁNÍ SEŠITU PO ČÁSTECH (NEPŘETÍŽÍ LIMIT TOKENŮ) ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
@@ -519,7 +619,6 @@
           const { text: raw } = await executeGroqChat(messages);
           const chunkTopics = extractTopicsList(raw);
           chunkTopics.forEach(t => allExtractedTopics.push(t));
-          // Pauza 1 sekundu mezi částmi, abychom dali serveru oddechnout
           if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 1000));
         } catch (err) {
           console.error('Chyba v části ' + (i + 1), err);
@@ -527,7 +626,7 @@
       }
 
       if (allExtractedTopics.length === 0) {
-        alert('AI nenašla v textu žádné nadpisy. Zkus zkontrolovat text.');
+        alert('AI nenašla v textu žádné nadpisy.');
         if (btn) { btn.innerText = '⚡ Rozdělit sešit na témata'; btn.disabled = false; }
         return;
       }
@@ -599,25 +698,38 @@
       });
     }
 
+    // --- UČENÍ (VČETNĚ DETAILNÍHO UČENÍ S RÁMEČKY A PAMĚŤOVÝMI TIPY) ---
     async function runAiStudy(type) {
       const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály...</p></div>`;
       
-      let sys = "Jsi špičkový osobní lektor. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
+      let sys = "Jsi špičkový osobní lektor a pedagog. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
       let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
-      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
-      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných přirovnání.";
-      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a definice.";
-      if (customNote) prompt += `\n\nDodatečný pokyn od studenta: ${customNote}`;
+
+      if (type === 'detailni') {
+        prompt += `VYTVOŘ MAXIMÁLNĚ DETAILNÍ A HLOUBKOVÝ STUDIJNÍ MATERIÁL. Nevynechej žádný fakt, definici ani souvislost.
+POVINNÁ STRUKTURA:
+1. Velmi podrobný rozbor látky od začátku do konce.
+2. V textu pravidelně vytvářej dva typy speciálních rámečků přesně v tomto formátu závorek:
+   [EXTRA: Zde napiš dodatečné zajímavé informace, historický/vědecký kontext a hlubší souvislosti, které v sešitu nebyly, ale pomáhají pochopit podstatu.]
+   [TIP NA PAMĚŤ: Zde napiš konkrétní mnemotechnickou pomůcku, asociaci, vtipný příměr nebo myšlenkový trik, jak si tento pojem, letopočet nebo vzorec natrvalo zapamatovat.]`;
+      } else if (type === 'shrnuti') {
+        prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
+      } else if (type === 'eli5') {
+        prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných přirovnání.";
+      } else if (type === 'predzvonici') {
+        prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a definice.";
+      }
+
+      if (customNote) prompt += `\n\nDodatečné přání studenta: ${customNote}`;
 
       try {
         const { text: response } = await executeGroqChat([
           { role: "system", content: sys },
           { role: "user", content: prompt }
         ]);
-        state.currentResultData = { type, basePrompt: prompt, sys };
-        nav('result', { title: 'Studijní materiály', content: response });
+        nav('result', { title: type === 'detailni' ? 'Detailní výklad látky' : 'Studijní materiály', content: response });
       } catch(e) {
         alert('Chyba: ' + e.message);
         nav('uceniHub');
@@ -794,14 +906,14 @@
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-3 text-amber-400">${title}</h2>
         
-        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm leading-relaxed text-slate-200">
+        <div class="bg-cardBg p-5 md:p-6 rounded-2xl border border-slate-800 text-sm leading-relaxed text-slate-200">
           ${cleanAndFormatText(content)}
         </div>
 
-        <div class="mt-4 p-4 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="mt-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
           <label class="block text-xs font-bold text-amber-300 uppercase mb-1.5">✏️ Chceš na tomto výsledku něco změnit?</label>
           <div class="flex gap-2">
-            <input id="refineInput" type="text" placeholder="např. zkrať to na polovinu / vysvětli víc bod 2 / přidej příklad..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
+            <input id="refineInput" type="text" placeholder="např. zkrať to / vysvětli víc bod 2 / přidej další mnemotechniku..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
             <button onclick="refineCurrentResult('${title}')" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 font-bold rounded-xl text-xs active:scale-95 transition">
               ⚡ Upravit
             </button>
@@ -822,7 +934,7 @@
 
       try {
         const { text: newResponse } = await executeGroqChat([
-          { role: "system", content: "Jsi asistent pro studium. Uprav předchozí výstup přesně podle nového přání studenta. Nepoužívej hvězdičky pro nadpisy." },
+          { role: "system", content: "Jsi asistent pro studium. Uprav předchozí výstup přesně podle nového přání studenta. Nepoužívej hvězdičky pro nadpisy. Můžeš zachovat rámečky [EXTRA:] a [TIP NA PAMĚŤ:]." },
           { role: "user", content: `Původní podklady látky:\n${getCombinedNotes()}\n\nNové přání studenta k úpravě: ${userInstruction}` }
         ]);
         renderOutputView({ title: title + ' (Upraveno)', content: newResponse });
@@ -925,7 +1037,7 @@
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">StudyApp v21.0 (Chunking Engine)</p>
+        <p class="text-xs text-slate-400 mb-4">StudyApp v22.0 Masterpiece (Dalí Edition)</p>
         
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
           <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace (PC ↔ iPad ↔ iPhone)</h3>
