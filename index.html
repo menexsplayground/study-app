@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v14.0</title>
+  <title>StudyApp v15.0</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
       <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-1.5">
         <span>🧠</span> StudyApp
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">v14.0 FreshKey</span>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/40">v15.0 DualAuth</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60">☁️ Cloud</span>
@@ -31,15 +31,9 @@
 
   <script>
     const CONFIG = { owner: 'menexsplayground', repo: 'study-app', dataFile: 'data.json' };
-    
-    // TVŮJ NOVÝ ČISTÝ KLÍČ ZE ZCELA NOVÉHO ÚČTU:
     const HARDCODED_GEMINI_KEY = 'AQ.Ab8RN6JHpB--kKB3RRh5EqGYnP7_sg5lFtuv6ZlmtjgxJraR3w';
     const HARDCODED_GH_TOKEN = atob('Z2hwX1diZ1AzaHVTb0hyd3J6bDBnZ2FaVmI3Y1ZTQUFuRjNLblJZdA==');
     const CASCADE_MODELS = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash-lite', 'gemini-3.8-flash'];
-
-    // DŮLEŽITÉ: Natvrdo přepíšeme jakýkoliv starý zablokovaný klíč v paměti prohlížeče!
-    localStorage.setItem('gemini_key', HARDCODED_GEMINI_KEY);
-    localStorage.setItem('github_token', HARDCODED_GH_TOKEN);
 
     function loadCleanSubjects() {
       try {
@@ -56,8 +50,8 @@
     }
 
     const state = {
-      apiKey: HARDCODED_GEMINI_KEY,
-      ghToken: HARDCODED_GH_TOKEN,
+      apiKey: (localStorage.getItem('gemini_key') || HARDCODED_GEMINI_KEY).trim(),
+      ghToken: (localStorage.getItem('github_token') || HARDCODED_GH_TOKEN).trim(),
       ghSha: localStorage.getItem('github_data_sha') || null,
       subjects: loadCleanSubjects(),
       selectedTopics: [],
@@ -174,7 +168,7 @@
           <p class="text-slate-400 text-xs mt-1">
             <span id="statsSubCount" class="text-blue-400 font-bold">${state.subjects.length} sešitů</span>, 
             <span class="text-blue-400 font-bold">${getTotalTopicsCount()} kapitol</span>
-            • <span class="text-emerald-400 font-semibold">Nový klíč aktivní ✅</span>
+            • <span class="text-emerald-400 font-semibold">Duální ověření aktivní ✅</span>
           </p>
         </div>
         <div class="grid gap-4 mt-8">
@@ -188,7 +182,7 @@
           </button>
           <button onclick="nav('vkladani')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
             <span class="text-4xl">📥</span>
-            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI pozná nadpisy.</p></div>
+            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky – AI pozná nadpisy.</p></div>
           </button>
         </div>
       `;
@@ -315,39 +309,43 @@
       `;
     }
 
-    // --- SPOLEHLIVÉ VOLÁNÍ S NOVÝM KLÍČEM ---
+    // --- DUÁLNÍ ROBUSTNÍ ENGINE: ZKOUŠÍ HLAVIČKU I PARAMETR ---
     async function executeGeminiWithFallback(payload) {
-      const key = HARDCODED_GEMINI_KEY.trim();
+      const key = (state.apiKey || HARDCODED_GEMINI_KEY).trim();
       let lastErr = null;
 
       for (const model of CASCADE_MODELS) {
+        // Způsob 1: Oficiální hlavička x-goog-api-key (pro AQ. klíče)
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-          const res = await fetch(url, {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            state.lastModel = model;
+            return { text: data.candidates[0].content.parts[0].text, model };
+          }
+          if (res.status === 503 || data.error?.message?.includes('high demand')) continue;
+        } catch(e) {}
+
+        // Způsob 2: Parametr v URL (?key=)
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
           const data = await res.json();
-          if (res.status === 503 || (data && data.error && (data.error.code === 503 || data.error.message?.includes('high demand')))) {
-            lastErr = new Error(`Model ${model} je přetížený.`);
-            continue;
+          if (res.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            state.lastModel = model;
+            return { text: data.candidates[0].content.parts[0].text, model };
           }
-          if (res.status === 404) continue;
-          if (!res.ok || (data && data.error)) {
-            throw new Error(data && data.error ? data.error.message : `Chyba HTTP ${res.status}`);
-          }
-          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-            throw new Error('Google nevrátil žádný text.');
-          }
-          state.lastModel = model;
-          return { text: data.candidates[0].content.parts[0].text, model };
-        } catch (e) {
-          lastErr = e;
-          continue;
-        }
+          if (data && data.error) lastErr = new Error(data.error.message || `Chyba HTTP ${res.status}`);
+        } catch(e) { lastErr = e; }
       }
-      throw lastErr || new Error('Spojení se nezdařilo. Zkus to za chvíli.');
+      throw lastErr || new Error('Google odmítl klíč nebo jsou servery nedostupné.');
     }
 
     async function runAiStudy(type) {
@@ -726,9 +724,17 @@
     function renderSettings() {
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <h2 class="text-2xl font-black mb-1">Nastavení a Cloud</h2>
-        <p class="text-xs text-slate-400 mb-4">Uloženo: <b>${state.subjects.length} sešitů</b>, <b>${getTotalTopicsCount()} kapitol</b></p>
+        <h2 class="text-2xl font-black mb-1">Nastavení a Klíče</h2>
+        <p class="text-xs text-slate-400 mb-4">Verze v15.0 (DualAuth)</p>
         
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
+          <label class="block text-xs font-bold text-slate-400 uppercase">Gemini API Klíč</label>
+          <input id="customKeyInput" type="text" value="${state.apiKey}" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 font-mono">
+          <button onclick="saveCustomKey()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-xs transition">
+            💾 Uložit klíč do paměti aplikace
+          </button>
+        </div>
+
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
           <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace (PC ↔ iPad ↔ iPhone)</h3>
           <button onclick="manualPush()" class="w-full py-3 bg-emerald-600/30 border border-emerald-500 text-emerald-300 font-bold rounded-lg text-xs">
@@ -740,7 +746,7 @@
           <div id="syncResult" class="text-xs font-medium"></div>
         </div>
 
-        <button onclick="testKeyNow()" class="w-full py-3 bg-cyan-600/30 border border-cyan-500 text-cyan-300 font-bold rounded-lg text-xs mb-3">
+        <button onclick="testKeyNow()" class="w-full py-3 bg-indigo-600/30 border border-indigo-500 text-indigo-300 font-bold rounded-lg text-xs mb-3">
           🔌 Otestovat rychlé spojení s AI
         </button>
         <div id="testResult" class="text-xs mb-4 font-medium"></div>
@@ -751,9 +757,17 @@
       `;
     }
 
+    function saveCustomKey() {
+      const val = document.getElementById('customKeyInput')?.value.trim();
+      if (!val) { alert('Zadej klíč!'); return; }
+      state.apiKey = val;
+      localStorage.setItem('gemini_key', val);
+      alert('✅ Klíč byl úspěšně uložen do aplikace!');
+    }
+
     async function testKeyNow() {
       const div = document.getElementById('testResult');
-      div.innerHTML = '<span class="text-blue-400">⏳ Testuji spojení s Googlem...</span>';
+      div.innerHTML = '<span class="text-blue-400">⏳ Testuji oběma metodami spojení s Googlem...</span>';
       try {
         const { text, model } = await executeGeminiWithFallback({ contents: [{ parts: [{ text: "Odpověz jedním slovem: FUNGUJE" }] }] });
         div.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE! (${model}): "${text.trim()}"</span>`;
