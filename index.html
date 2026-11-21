@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>StudyApp</title>
   
-  <!-- iOS PWA META TAGY PRO PLOCHU -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="StudyApp">
@@ -18,37 +17,25 @@
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- ZÁHLAVÍ S NOVÝM DETAILNÍM SLONEM BEZ OBELISKU -->
+  <!-- ZÁHLAVÍ S DALÍHO SLONEM -->
   <header class="p-3 pt-6 md:pt-4 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-3">
       <button onclick="nav('home')" class="flex items-center gap-2 group">
-        <!-- Vektorový Dalího slon s extrémně dlouhýma nohama a detaily -->
         <svg class="w-9 h-12 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.45)] transition-transform group-hover:scale-105" viewBox="0 0 100 130" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <!-- Hřbet a drapérie -->
           <path d="M34,28 C42,24 58,24 66,28 C68,34 66,42 62,45 L38,45 C34,42 32,34 34,28 Z" fill="currentColor" fill-opacity="0.15" stroke-width="1.8"/>
           <line x1="36" y1="45" x2="64" y2="45" stroke-width="2"/>
           <path d="M38,45 Q50,49 62,45" stroke-width="1.5" stroke-dasharray="2 2"/>
-          <!-- Tělo slona -->
           <path d="M30,34 C24,36 20,42 20,48 C20,55 26,60 35,61 L65,61 C74,60 80,55 80,47 C80,39 74,33 65,32 Z" fill="currentColor" fill-opacity="0.25"/>
-          <!-- Mohutná hlava a ucho -->
           <path d="M25,40 C19,38 15,44 16,51 C18,55 22,57 26,56" stroke-width="1.8"/>
-          <!-- Chobot elegantně zdvižený nahoru -->
           <path d="M19,48 C14,54 11,62 8,65 C6,66 4,64 6,61 C9,56 12,47 16,39 C18,33 22,29 27,31"/>
-          <!-- Dlouhé zakřivené kly -->
           <path d="M21,53 C15,57 9,56 5,51" stroke-width="2" stroke="rgb(254 243 199)"/>
-          <!-- Ocas -->
           <path d="M78,48 C82,53 81,59 82,64" stroke-width="1.5"/>
-          <!-- Extrémně dlouhé tenké stilt nohy s klouby -->
-          <!-- Přední noha 1 -->
           <path d="M30,61 L26,86 L21,124"/>
           <circle cx="26" cy="86" r="1.8" fill="currentColor"/>
-          <!-- Přední noha 2 -->
           <path d="M38,61 L35,88 L31,124"/>
           <circle cx="35" cy="88" r="1.8" fill="currentColor"/>
-          <!-- Zadní noha 1 -->
           <path d="M62,61 L65,86 L69,124"/>
           <circle cx="65" cy="86" r="1.8" fill="currentColor"/>
-          <!-- Zadní noha 2 -->
           <path d="M71,61 L74,89 L79,124"/>
           <circle cx="74" cy="89" r="1.8" fill="currentColor"/>
         </svg>
@@ -73,23 +60,19 @@
 
     let cachedActiveGroqModel = null;
 
-    // --- GENEROVÁNÍ OFICIÁLNÍ IKONY NA PLOCHU (JAKO NETFLIX) ---
     function setupAppleHomeScreenIcon() {
       try {
         const c = document.createElement('canvas');
         c.width = 180; c.height = 180;
         const ctx = c.getContext('2d');
-        // Elegantní černé pozadí s radiálním zábleskem
         const grad = ctx.createRadialGradient(90, 80, 10, 90, 90, 110);
         grad.addColorStop(0, '#1e293b');
         grad.addColorStop(1, '#050811');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 180, 180);
-        // Zlatý rámeček
         ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 4;
         ctx.strokeRect(6, 6, 168, 168);
-        // Vykreslení zlatého Dalího slona doprostřed
         ctx.strokeStyle = '#fbbf24';
         ctx.fillStyle = '#fbbf24';
         ctx.lineWidth = 3.5;
@@ -99,51 +82,39 @@
         ctx.save();
         ctx.translate(45, 10);
         ctx.scale(0.9, 0.9);
-        // Drapérie
         ctx.beginPath();
         ctx.moveTo(34, 28); ctx.bezierCurveTo(42, 24, 58, 24, 66, 28);
         ctx.bezierCurveTo(68, 34, 66, 42, 62, 45); ctx.lineTo(38, 45); ctx.closePath();
         ctx.stroke();
-        // Tělo
         ctx.beginPath();
         ctx.moveTo(30, 34); ctx.bezierCurveTo(24, 36, 20, 42, 20, 48);
         ctx.bezierCurveTo(20, 55, 26, 60, 35, 61); ctx.lineTo(65, 61);
         ctx.bezierCurveTo(74, 60, 80, 55, 80, 47); ctx.bezierCurveTo(80, 39, 74, 33, 65, 32); ctx.closePath();
         ctx.stroke();
-        // Chobot
         ctx.beginPath();
         ctx.moveTo(19, 48); ctx.bezierCurveTo(14, 54, 11, 62, 8, 65);
         ctx.bezierCurveTo(6, 66, 4, 64, 6, 61); ctx.bezierCurveTo(9, 56, 12, 47, 16, 39);
         ctx.stroke();
-        // Nohy
         ctx.beginPath(); ctx.moveTo(30, 61); ctx.lineTo(26, 92); ctx.lineTo(21, 142); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(38, 61); ctx.lineTo(35, 94); ctx.lineTo(31, 142); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(62, 61); ctx.lineTo(65, 92); ctx.lineTo(69, 142); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(71, 61); ctx.lineTo(74, 95); ctx.lineTo(79, 142); ctx.stroke();
         ctx.restore();
 
-        const iconUrl = c.toDataURL('image/png');
-        document.getElementById('appleTouchIcon').href = iconUrl;
+        document.getElementById('appleTouchIcon').href = c.toDataURL('image/png');
       } catch(e) {}
     }
 
-    // --- ČISTIČ TEXTU: ODSTRANÍ VEŠKERÉ HVĚZDIČKY A MŘÍŽKY ---
     function cleanAndFormatText(text) {
       if (!text) return '';
       let s = String(text);
-      // Převod nadpisů na čisté HTML bez mřížek
       s = s.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-amber-300 mt-4 mb-2">$1</h3>');
       s = s.replace(/^## (.*$)/gim, '<h2 class="text-xl font-extrabold text-amber-400 mt-5 mb-2">$1</h2>');
       s = s.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-amber-400 mt-6 mb-3">$1</h1>');
-      // Převod tučného textu **text** na <strong> bez hvězdiček
       s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-100">$1</strong>');
-      // Převod kurzívy *text* na <em>
       s = s.replace(/\*(.*?)\*/g, '<em class="text-slate-300 italic">$1</em>');
-      // Odstranění jakýchkoliv zbylých hvězdiček
       s = s.replace(/\*/g, '');
-      // Odrážky
       s = s.replace(/^\s*[-•]\s+(.*$)/gim, '<div class="flex items-start gap-2 my-1.5"><span class="text-amber-400 font-bold">•</span><span class="text-slate-200">$1</span></div>');
-      // Odřádkování
       s = s.replace(/\n\n/g, '<div class="h-3"></div>');
       s = s.replace(/\n/g, '<br>');
       return s;
@@ -172,7 +143,7 @@
       currentMode: null,
       chatHistory: [],
       oralExamHistory: [],
-      currentResultData: null // pro úpravu na míru
+      currentResultData: null
     };
 
     function setCloudStatus(type, text) {
@@ -379,7 +350,6 @@
       return state.selectedTopics.map(t => `Téma: ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
-    // --- REŽIMY UČENÍ S MOŽNOSTÍ VLASTNÍHO POKYNU ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -387,7 +357,6 @@
         <h2 class="text-2xl font-black mb-1">Režimy učení</h2>
         <p class="text-xs text-amber-400 mb-4 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
 
-        <!-- VOLITELNÝ POKYN PŘED SPUŠTĚNÍM -->
         <div class="mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
           <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">💡 Máš speciální přání pro AI? (volitelné)</label>
           <input id="customInstructionInput" type="text" placeholder="např. zaměř se na data a letopočty / udělej to extra stručně..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200">
@@ -410,7 +379,6 @@
       `;
     }
 
-    // --- REŽIMY ZKOUŠENÍ S MOŽNOSTÍ VLASTNÍHO POKYNU ---
     function renderZkouseniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -437,7 +405,6 @@
       `;
     }
 
-    // --- GROQ API ENGINE ---
     async function getActiveGroqModel() {
       if (cachedActiveGroqModel) return cachedActiveGroqModel;
       const key = state.apiKey.trim();
@@ -461,7 +428,8 @@
       return cachedActiveGroqModel;
     }
 
-    async function executeGroqChat(messages) {
+    // --- ENGINE S AUTOMATICKÝM OPAKOVÁNÍM PŘI 429 RATE LIMITU ---
+    async function executeGroqChat(messages, retryCount = 0) {
       const key = state.apiKey.trim();
       const model = await getActiveGroqModel();
       
@@ -472,13 +440,20 @@
       });
 
       const data = await res.json();
+
+      // Pokud narazíme na Rate Limit (429), automaticky počkáme pár sekund a zkusíme znovu
+      if (res.status === 429 && retryCount < 3) {
+        console.warn(`Groq 429 (Rate limit) - čekám ${3 * (retryCount + 1)}s a zkouším znovu...`);
+        await new Promise(r => setTimeout(r, 3500 * (retryCount + 1)));
+        return await executeGroqChat(messages, retryCount + 1);
+      }
+
       if (!res.ok || (data && data.error)) {
         throw new Error(data && data.error ? data.error.message : `Chyba HTTP ${res.status}`);
       }
       return { text: data.choices[0].message.content, model };
     }
 
-    // Náš odolný JSON parser
     function extractTopicsList(rawText) {
       let cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const first = cleaned.search(/[\{\[]/);
@@ -488,7 +463,7 @@
       let parsed;
       try { parsed = JSON.parse(cleaned); } catch(e) {
         cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
-        parsed = JSON.parse(cleaned);
+        try { parsed = JSON.parse(cleaned); } catch(err) { return []; }
       }
       if (Array.isArray(parsed)) return parsed;
       if (parsed && typeof parsed === 'object') {
@@ -500,339 +475,76 @@
       return [];
     }
 
-    // --- UČENÍ (BEZ HVĚZDIČEK S MOŽNOSTÍ ÚPRAVY) ---
-    async function runAiStudy(type) {
-      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály...</p></div>`;
-      
-      let sys = "Jsi špičkový osobní lektor. DŮLEŽITÉ PRAVIDLO: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
-      let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
-      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
-      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných a zapamatovatelných přirovnání.";
-      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a definice.";
-      if (customNote) prompt += `\n\nDodatečný pokyn od studenta: ${customNote}`;
-
-      try {
-        const { text: response } = await executeGroqChat([
-          { role: "system", content: sys },
-          { role: "user", content: prompt }
-        ]);
-        state.currentResultData = { type, basePrompt: prompt, sys };
-        nav('result', { title: 'Studijní materiály', content: response });
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('uceniHub');
+    // --- CHYTRÉ ROZDĚLENÍ DLOUHÉHO SEŠITU NA ČÁSTI (CHUNKS) ---
+    function splitTextIntoSafeChunks(text, maxChars = 3200) {
+      if (text.length <= maxChars) return [text];
+      const paragraphs = text.split(/\n\s*\n/);
+      const chunks = [];
+      let current = '';
+      for (const p of paragraphs) {
+        if ((current + '\n\n' + p).length > maxChars && current.length > 0) {
+          chunks.push(current.trim());
+          current = p;
+        } else {
+          current = current ? current + '\n\n' + p : p;
+        }
       }
+      if (current.trim()) chunks.push(current.trim());
+      return chunks;
     }
 
-    // --- ZKOUŠENÍ: KARTICKY ---
-    async function startFlashcards() {
-      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje kartičky...</p></div>`;
-      
-      let userPrompt = `Z těchto poznámek vytvoř 8 kartiček. Vrať VÝHRADNĚ platný JSON ve tvaru: {"cards": [{"q": "Otázka", "a": "Odpověď"}]}.\n\nPoznámky:\n${getCombinedNotes()}`;
-      if (customNote) userPrompt += `\nPokyn studenta: ${customNote}`;
-
-      try {
-        const { text: raw } = await executeGroqChat([
-          { role: "system", content: "Vytvoř kartičky ve formátu JSON bez zbytečného textu okolo." },
-          { role: "user", content: userPrompt }
-        ]);
-        let parsed = extractTopicsList(raw);
-        nav('flashcards', parsed);
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    function renderFlashcardsView(cards) {
-      let cur = 0, flipped = false;
-      function draw() {
-        const c = cards[cur] || { q: 'Žádná otázka', a: 'Žádná odpověď' };
-        document.getElementById('app').innerHTML = `
-          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-          <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Kartička ${cur + 1} z ${cards.length}</h2></div>
-          <div onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
-            <p class="text-lg font-semibold text-slate-100">${cleanAndFormatText(flipped ? (c.a || c.odpoved) : (c.q || c.otazka))}</p>
-          </div>
-          <div class="flex gap-3 mt-6">
-            <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
-            <button onclick="next()" class="flex-1 py-3 bg-purple-600 rounded-xl font-bold text-sm">Další</button>
-          </div>
-        `;
-      }
-      window.flip = () => { flipped = !flipped; draw(); };
-      window.prev = () => { if(cur > 0) { cur--; flipped = false; draw(); } };
-      window.next = () => { if(cur < cards.length - 1) { cur++; flipped = false; draw(); } else { alert('Prošel jsi všechny kartičky!'); nav('zkouseniHub'); } };
-      draw();
-    }
-
-    // --- TEST NANEČISTO ---
-    async function runAiTest() {
-      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq připravuje test...</p></div>`;
-      
-      let p = `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj správné odpovědi. DŮLEŽITÉ: Nepoužívej hvězdičky pro nadpisy.\n\n${getCombinedNotes()}`;
-      if (customNote) p += `\nPokyn studenta: ${customNote}`;
-
-      try {
-        const { text: response } = await executeGroqChat([
-          { role: "system", content: "Jsi spravedlivý učitel tvořící test. Piš čistý text bez hvězdiček." },
-          { role: "user", content: p }
-        ]);
-        state.currentTestPrompt = response;
-        app.innerHTML = `
-          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-          <h2 class="text-2xl font-black mb-3 text-purple-400">Test nanečisto</h2>
-          <div class="bg-cardBg p-4 rounded-xl border border-slate-800 text-sm text-slate-300 mb-4 leading-relaxed">${cleanAndFormatText(response)}</div>
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpovědi:</label>
-          <textarea id="studentAnswers" rows="5" placeholder="Napiš sem své odpovědi (1..., 2...)..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-4"></textarea>
-          <button onclick="evaluateTestSubmit()" class="w-full py-4 bg-purple-600 font-bold rounded-xl active:scale-98">Vyhodnotit a oznámkovat</button>
-        `;
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    async function evaluateTestSubmit() {
-      const answers = document.getElementById('studentAnswers')?.value;
-      if (!answers) { alert('Nejprve napiš své odpovědi!'); return; }
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Opravuji test a počítám známku...</p></div>`;
-      
-      const prompt = `TEST:\n${state.currentTestPrompt}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
-      try {
-        const { text: evaluation } = await executeGroqChat([
-          { role: "system", content: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby. Nepoužívej hvězdičky pro nadpisy." },
-          { role: "user", content: prompt }
-        ]);
-        nav('result', { title: 'Výsledek testu', content: evaluation });
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('zkouseniHub');
-      }
-    }
-
-    // --- ÚSTNÍ ZKOUŠENÍ ---
-    function startOralExam() {
-      state.oralExamHistory = [{ role: 'assistant', content: 'Dobrý den. Pojďme k tabuli. Co mi dokážeš říct k prvnímu z vybraných témat?' }];
-      nav('oralExam');
-    }
-
-    function renderOralExamView() {
-      const app = document.getElementById('app');
-      let chatMsgs = state.oralExamHistory.map(m => `
-        <div class="p-3 rounded-xl text-sm ${m.role === 'assistant' ? 'bg-purple-900/30 border border-purple-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
-          <span class="block text-[10px] font-bold text-slate-400 mb-1">${m.role === 'assistant' ? '👨‍🏫 Učitel' : '🧑‍🎓 Ty'}</span>
-          <div>${cleanAndFormatText(m.content)}</div>
-        </div>
-      `).join('');
-      app.innerHTML = `
-        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Ukončit zkoušení</button>
-        <h2 class="text-xl font-bold mb-3">Ústní zkoušení</h2>
-        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto pr-1">${chatMsgs}</div>
-        <div class="flex gap-2">
-          <input id="oralInput" type="text" placeholder="Tvoje odpověď (nebo instrukce učiteli)..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendOralAnswer()">
-          <button onclick="sendOralAnswer()" class="px-4 py-3 bg-purple-600 rounded-xl font-bold text-sm">Odpovědět</button>
-        </div>
-      `;
-    }
-
-    async function sendOralAnswer() {
-      const input = document.getElementById('oralInput');
-      const val = input?.value.trim();
-      if (!val) return;
-      state.oralExamHistory.push({ role: 'user', content: val });
-      renderOralExamView();
-      try {
-        const { text: reply } = await executeGroqChat([
-          { role: "system", content: `Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku k látce. Nepoužívej hvězdičky.\n${getCombinedNotes()}` },
-          ...state.oralExamHistory
-        ]);
-        state.oralExamHistory.push({ role: 'assistant', content: reply });
-        renderOralExamView();
-      } catch(e) { alert(e.message); }
-    }
-
-    // --- DOUČOVATEL ---
-    function renderChatView() {
-      const app = document.getElementById('app');
-      let msgs = state.chatHistory.map(m => `
-        <div class="p-3 rounded-xl text-sm ${m.role === 'assistant' ? 'bg-blue-900/30 border border-blue-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
-          <div>${cleanAndFormatText(m.content)}</div>
-        </div>
-      `).join('');
-      app.innerHTML = `
-        <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-        <h2 class="text-xl font-bold mb-3">Doučovatel</h2>
-        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných kapitol...</p>'}</div>
-        <div class="flex gap-2">
-          <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
-          <button onclick="sendChatMessage()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-sm">Odeslat</button>
-        </div>
-      `;
-    }
-
-    async function sendChatMessage() {
-      const input = document.getElementById('chatInput');
-      const val = input?.value.trim();
-      if (!val) return;
-      state.chatHistory.push({ role: 'user', content: val });
-      renderChatView();
-      try {
-        const { text: reply } = await executeGroqChat([
-          { role: "system", content: `Jsi trpělivý osobní lektor. Odpovídej věcně a bez zbytečných hvězdiček k této látce:\n${getCombinedNotes()}` },
-          ...state.chatHistory
-        ]);
-        state.chatHistory.push({ role: 'assistant', content: reply });
-        renderChatView();
-      } catch(e) { alert(e.message); }
-    }
-
-    // --- ZOBRAZENÍ VÝSLEDKU S MOŽNOSTÍ OKAMŽITÉ ÚPRAVY (PŘEPRACOVÁNÍ) ---
-    function renderOutputView({ title, content }) {
-      document.getElementById('app').innerHTML = `
-        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <h2 class="text-2xl font-black mb-3 text-amber-400">${title}</h2>
-        
-        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm leading-relaxed text-slate-200">
-          ${cleanAndFormatText(content)}
-        </div>
-
-        <!-- RÁMEČEK PRO OKAMŽITOU ÚPRAVU NA PŘÁNÍ -->
-        <div class="mt-4 p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <label class="block text-xs font-bold text-amber-300 uppercase mb-1.5">✏️ Chceš na tomto výsledku něco změnit?</label>
-          <div class="flex gap-2">
-            <input id="refineInput" type="text" placeholder="např. zkrať to na polovinu / vysvětli víc bod 2 / přidej příklad..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
-            <button onclick="refineCurrentResult('${title}')" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 font-bold rounded-xl text-xs active:scale-95 transition">
-              ⚡ Upravit
-            </button>
-          </div>
-        </div>
-
-        <button onclick="nav('home')" class="w-full mt-4 py-3.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-sm">Hotovo</button>
-      `;
-    }
-
-    async function refineCurrentResult(title) {
-      const input = document.getElementById('refineInput');
-      const userInstruction = input?.value.trim();
-      if (!userInstruction) return;
-
-      const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Přepracovávám podle tvého přání: "${userInstruction}"...</p></div>`;
-
-      try {
-        const { text: newResponse } = await executeGroqChat([
-          { role: "system", content: "Jsi asistent pro studium. Uprav předchozí výstup přesně podle nového přání studenta. Nepoužívej hvězdičky pro nadpisy." },
-          { role: "user", content: `Původní podklady látky:\n${getCombinedNotes()}\n\nNové přání studenta k úpravě: ${userInstruction}` }
-        ]);
-        renderOutputView({ title: title + ' (Upraveno)', content: newResponse });
-      } catch(e) {
-        alert('Chyba: ' + e.message);
-        nav('home');
-      }
-    }
-
-    // --- VKLÁDÁNÍ SEŠITU ---
-    function renderVkladani() {
-      const app = document.getElementById('app');
-      let subOptions = state.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-      app.innerHTML = `
-        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <h2 class="text-2xl font-black">Vložit celý sešit</h2>
-        <p class="text-slate-400 text-xs mb-5">AI sama rozpozná nadpisy a rozdělí sešit na kapitoly.</p>
-        <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
-          <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">1. Předmět</label>
-            ${state.subjects.length > 0 ? `
-              <div class="mb-2">
-                <select id="selectSub" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200" onchange="toggleCustomSub(this)">
-                  <option value="">-- Vyber existující předmět --</option>
-                  ${subOptions}
-                  <option value="__NEW__">➕ Zadat nový předmět...</option>
-                </select>
-              </div>
-            ` : ''}
-            <input id="inputSubName" type="text" placeholder="Zadej název předmětu (např. Dějepis)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 ${state.subjects.length > 0 ? 'hidden' : ''}">
-          </div>
-          <div class="pt-3 border-t border-slate-800">
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost A: Vybrat fotky sešitu (Galerie / Foťák)</label>
-            <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-400 transition">
-              <span class="text-3xl">📸</span>
-              <span class="text-sm font-bold mt-2 text-amber-400">Vybrat fotky sešitu</span>
-              <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
-            </label>
-          </div>
-          <div class="pt-3 border-t border-slate-800">
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit text z Apple Notes</label>
-            <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
-            <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
-              ⚡ Rozdělit sešit na témata
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function toggleCustomSub(selectEl) {
-      const input = document.getElementById('inputSubName');
-      if (selectEl && input) {
-        if (selectEl.value === '__NEW__') { input.classList.remove('hidden'); input.focus(); }
-        else { input.classList.add('hidden'); }
-      }
-    }
-
-    function getResolvedSubjectName() {
-      const select = document.getElementById('selectSub');
-      const input = document.getElementById('inputSubName');
-      if (select && select.value && select.value !== '__NEW__') return select.value.trim();
-      if (input && input.value) return input.value.trim();
-      return '';
-    }
-
+    // --- VKLÁDÁNÍ SEŠITU PO ČÁSTECH (NEPŘETÍŽÍ LIMIT TOKENŮ) ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
       const fullText = textArea ? textArea.value.trim() : '';
       if (!subName) { alert('Vyber nebo zadej předmět!'); return; }
       if (!fullText) { alert('Vlož text sešitu!'); return; }
+      
       const btn = document.getElementById('saveTextBtn');
-      if (btn) { btn.innerText = '⚡ Dělím sešit na témata...'; btn.disabled = true; }
+      if (btn) btn.disabled = true;
 
-      const messages = [
-        { role: "system", content: "Rozděl zadaný text sešitu na témata podle hlavních nadpisů. Vrať VÝHRADNĚ platný JSON formát: {\"topics\": [{\"title\":\"1. Nadpis\",\"content\":\"text poznámek...\"}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
-        { role: "user", content: `Předmět: ${subName}\n\n${fullText}` }
-      ];
+      const chunks = splitTextIntoSafeChunks(fullText, 3200);
+      const allExtractedTopics = [];
 
-      try {
-        const { text: raw } = await executeGroqChat(messages);
-        const topicsList = extractTopicsList(raw);
-        if (!topicsList.length) throw new Error('AI nenašla v textu žádné nadpisy.');
-
-        let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === subName.toLowerCase());
-        if (!sub) { sub = { id: 'sub_' + Date.now(), name: subName, topics: [] }; state.subjects.push(sub); }
-        if (!Array.isArray(sub.topics)) sub.topics = [];
-
-        topicsList.forEach(t => {
-          if (t && (t.title || t.content)) {
-            sub.topics.push({ id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: String(t.title || 'Kapitola').trim(), content: String(t.content || '').trim() });
-          }
-        });
+      for (let i = 0; i < chunks.length; i++) {
+        if (btn) btn.innerText = `⚡ Zpracovávám sešit: Část ${i + 1} z ${chunks.length}...`;
         
-        await pushToCloud();
-        alert(`🎉 Hotovo! Sešit "${subName}" byl rozdělen na ${topicsList.length} kapitol.`);
-        nav('home');
-      } catch (err) {
-        alert('CHYBA: ' + err.message);
-        if (btn) { btn.innerText = '⚡ Rozdělit sešit na témata'; btn.disabled = false; }
+        const messages = [
+          { role: "system", content: "Rozděl zadaný text sešitu na témata podle hlavních nadpisů. Vrať VÝHRADNĚ platný JSON formát bez dalších slov okolo: {\"topics\": [{\"title\":\"Název nadpisu\",\"content\":\"text poznámek...\"}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
+          { role: "user", content: `Předmět: ${subName}\nČást ${i + 1}/${chunks.length}:\n\n${chunks[i]}` }
+        ];
+
+        try {
+          const { text: raw } = await executeGroqChat(messages);
+          const chunkTopics = extractTopicsList(raw);
+          chunkTopics.forEach(t => allExtractedTopics.push(t));
+          // Pauza 1 sekundu mezi částmi, abychom dali serveru oddechnout
+          if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 1000));
+        } catch (err) {
+          console.error('Chyba v části ' + (i + 1), err);
+        }
       }
+
+      if (allExtractedTopics.length === 0) {
+        alert('AI nenašla v textu žádné nadpisy. Zkus zkontrolovat text.');
+        if (btn) { btn.innerText = '⚡ Rozdělit sešit na témata'; btn.disabled = false; }
+        return;
+      }
+
+      let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === subName.toLowerCase());
+      if (!sub) { sub = { id: 'sub_' + Date.now(), name: subName, topics: [] }; state.subjects.push(sub); }
+      if (!Array.isArray(sub.topics)) sub.topics = [];
+
+      allExtractedTopics.forEach(t => {
+        if (t && (t.title || t.content)) {
+          sub.topics.push({ id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: String(t.title || 'Kapitola').trim(), content: String(t.content || '').trim() });
+        }
+      });
+      
+      await pushToCloud();
+      alert(`🎉 Hotovo! Sešit "${subName}" byl bezpečně rozdělen na ${allExtractedTopics.length} kapitol.`);
+      nav('home');
     }
 
     async function handleMultipleImages(input) {
@@ -887,6 +599,295 @@
       });
     }
 
+    async function runAiStudy(type) {
+      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály...</p></div>`;
+      
+      let sys = "Jsi špičkový osobní lektor. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
+      let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
+      if (type === 'shrnuti') prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
+      else if (type === 'eli5') prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných přirovnání.";
+      else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a definice.";
+      if (customNote) prompt += `\n\nDodatečný pokyn od studenta: ${customNote}`;
+
+      try {
+        const { text: response } = await executeGroqChat([
+          { role: "system", content: sys },
+          { role: "user", content: prompt }
+        ]);
+        state.currentResultData = { type, basePrompt: prompt, sys };
+        nav('result', { title: 'Studijní materiály', content: response });
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('uceniHub');
+      }
+    }
+
+    async function startFlashcards() {
+      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje kartičky...</p></div>`;
+      
+      let userPrompt = `Z těchto poznámek vytvoř 8 kartiček. Vrať VÝHRADNĚ platný JSON ve tvaru: {"cards": [{"q": "Otázka", "a": "Odpověď"}]}.\n\nPoznámky:\n${getCombinedNotes()}`;
+      if (customNote) userPrompt += `\nPokyn studenta: ${customNote}`;
+
+      try {
+        const { text: raw } = await executeGroqChat([
+          { role: "system", content: "Vytvoř kartičky ve formátu JSON bez zbytečného textu okolo." },
+          { role: "user", content: userPrompt }
+        ]);
+        let parsed = extractTopicsList(raw);
+        nav('flashcards', parsed);
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    function renderFlashcardsView(cards) {
+      let cur = 0, flipped = false;
+      function draw() {
+        const c = cards[cur] || { q: 'Žádná otázka', a: 'Žádná odpověď' };
+        document.getElementById('app').innerHTML = `
+          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+          <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Kartička ${cur + 1} z ${cards.length}</h2></div>
+          <div onclick="flip()" class="min-h-[220px] p-6 rounded-2xl bg-cardBg border border-purple-500/40 flex flex-col justify-center items-center text-center cursor-pointer active:scale-98 transition shadow-lg">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">${flipped ? 'Odpověď' : 'Otázka (ťukni pro otočení)'}</span>
+            <p class="text-lg font-semibold text-slate-100">${cleanAndFormatText(flipped ? (c.a || c.odpoved) : (c.q || c.otazka))}</p>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button onclick="prev()" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-sm">Předchozí</button>
+            <button onclick="next()" class="flex-1 py-3 bg-purple-600 rounded-xl font-bold text-sm">Další</button>
+          </div>
+        `;
+      }
+      window.flip = () => { flipped = !flipped; draw(); };
+      window.prev = () => { if(cur > 0) { cur--; flipped = false; draw(); } };
+      window.next = () => { if(cur < cards.length - 1) { cur++; flipped = false; draw(); } else { alert('Prošel jsi všechny kartičky!'); nav('zkouseniHub'); } };
+      draw();
+    }
+
+    async function runAiTest() {
+      const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq připravuje test...</p></div>`;
+      
+      let p = `Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj správné odpovědi. DŮLEŽITÉ: Nepoužívej hvězdičky pro nadpisy.\n\n${getCombinedNotes()}`;
+      if (customNote) p += `\nPokyn studenta: ${customNote}`;
+
+      try {
+        const { text: response } = await executeGroqChat([
+          { role: "system", content: "Jsi spravedlivý učitel tvořící test. Piš čistý text bez hvězdiček." },
+          { role: "user", content: p }
+        ]);
+        state.currentTestPrompt = response;
+        app.innerHTML = `
+          <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+          <h2 class="text-2xl font-black mb-3 text-purple-400">Test nanečisto</h2>
+          <div class="bg-cardBg p-4 rounded-xl border border-slate-800 text-sm text-slate-300 mb-4 leading-relaxed">${cleanAndFormatText(response)}</div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpovědi:</label>
+          <textarea id="studentAnswers" rows="5" placeholder="Napiš sem své odpovědi (1..., 2...)..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-4"></textarea>
+          <button onclick="evaluateTestSubmit()" class="w-full py-4 bg-purple-600 font-bold rounded-xl active:scale-98">Vyhodnotit a oznámkovat</button>
+        `;
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    async function evaluateTestSubmit() {
+      const answers = document.getElementById('studentAnswers')?.value;
+      if (!answers) { alert('Nejprve napiš své odpovědi!'); return; }
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq opravuje test a počítá známku...</p></div>`;
+      
+      const prompt = `TEST:\n${state.currentTestPrompt}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
+      try {
+        const { text: evaluation } = await executeGroqChat([
+          { role: "system", content: "Jsi učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby. Nepoužívej hvězdičky pro nadpisy." },
+          { role: "user", content: prompt }
+        ]);
+        nav('result', { title: 'Výsledek testu', content: evaluation });
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('zkouseniHub');
+      }
+    }
+
+    function startOralExam() {
+      state.oralExamHistory = [{ role: 'assistant', content: 'Dobrý den. Pojďme k tabuli. Co mi dokážeš říct k prvnímu z vybraných témat?' }];
+      nav('oralExam');
+    }
+
+    function renderOralExamView() {
+      const app = document.getElementById('app');
+      let chatMsgs = state.oralExamHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'assistant' ? 'bg-purple-900/30 border border-purple-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <span class="block text-[10px] font-bold text-slate-400 mb-1">${m.role === 'assistant' ? '👨‍🏫 Učitel' : '🧑‍🎓 Ty'}</span>
+          <div>${cleanAndFormatText(m.content)}</div>
+        </div>
+      `).join('');
+      app.innerHTML = `
+        <button onclick="nav('zkouseniHub')" class="text-xs text-slate-400 mb-3">← Ukončit zkoušení</button>
+        <h2 class="text-xl font-bold mb-3">Ústní zkoušení</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto pr-1">${chatMsgs}</div>
+        <div class="flex gap-2">
+          <input id="oralInput" type="text" placeholder="Tvoje odpověď (nebo instrukce učiteli)..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendOralAnswer()">
+          <button onclick="sendOralAnswer()" class="px-4 py-3 bg-purple-600 rounded-xl font-bold text-sm">Odpovědět</button>
+        </div>
+      `;
+    }
+
+    async function sendOralAnswer() {
+      const input = document.getElementById('oralInput');
+      const val = input?.value.trim();
+      if (!val) return;
+      state.oralExamHistory.push({ role: 'user', content: val });
+      renderOralExamView();
+      try {
+        const { text: reply } = await executeGroqChat([
+          { role: "system", content: `Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku k látce. Nepoužívej hvězdičky.\n${getCombinedNotes()}` },
+          ...state.oralExamHistory
+        ]);
+        state.oralExamHistory.push({ role: 'assistant', content: reply });
+        renderOralExamView();
+      } catch(e) { alert(e.message); }
+    }
+
+    function renderChatView() {
+      const app = document.getElementById('app');
+      let msgs = state.chatHistory.map(m => `
+        <div class="p-3 rounded-xl text-sm ${m.role === 'assistant' ? 'bg-blue-900/30 border border-blue-800/40 mr-6' : 'bg-slate-800 ml-6 text-right'}">
+          <div>${cleanAndFormatText(m.content)}</div>
+        </div>
+      `).join('');
+      app.innerHTML = `
+        <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
+        <h2 class="text-xl font-bold mb-3">Doučovatel</h2>
+        <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných kapitol...</p>'}</div>
+        <div class="flex gap-2">
+          <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button onclick="sendChatMessage()" class="px-4 py-3 bg-blue-600 rounded-xl font-bold text-sm">Odeslat</button>
+        </div>
+      `;
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const val = input?.value.trim();
+      if (!val) return;
+      state.chatHistory.push({ role: 'user', text: val });
+      renderChatView();
+      try {
+        const { text: reply } = await executeGroqChat([
+          { role: "system", content: `Jsi trpělivý osobní lektor. Odpovídej věcně a bez zbytečných hvězdiček k této látce:\n${getCombinedNotes()}` },
+          ...state.chatHistory
+        ]);
+        state.chatHistory.push({ role: 'assistant', content: reply });
+        renderChatView();
+      } catch(e) { alert(e.message); }
+    }
+
+    function renderOutputView({ title, content }) {
+      document.getElementById('app').innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black mb-3 text-amber-400">${title}</h2>
+        
+        <div class="bg-cardBg p-5 rounded-2xl border border-slate-800 text-sm leading-relaxed text-slate-200">
+          ${cleanAndFormatText(content)}
+        </div>
+
+        <div class="mt-4 p-4 rounded-2xl bg-slate-900 border border-slate-800">
+          <label class="block text-xs font-bold text-amber-300 uppercase mb-1.5">✏️ Chceš na tomto výsledku něco změnit?</label>
+          <div class="flex gap-2">
+            <input id="refineInput" type="text" placeholder="např. zkrať to na polovinu / vysvětli víc bod 2 / přidej příklad..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
+            <button onclick="refineCurrentResult('${title}')" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 font-bold rounded-xl text-xs active:scale-95 transition">
+              ⚡ Upravit
+            </button>
+          </div>
+        </div>
+
+        <button onclick="nav('home')" class="w-full mt-4 py-3.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-sm">Hotovo</button>
+      `;
+    }
+
+    async function refineCurrentResult(title) {
+      const input = document.getElementById('refineInput');
+      const userInstruction = input?.value.trim();
+      if (!userInstruction) return;
+
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Přepracovávám podle tvého přání...</p></div>`;
+
+      try {
+        const { text: newResponse } = await executeGroqChat([
+          { role: "system", content: "Jsi asistent pro studium. Uprav předchozí výstup přesně podle nového přání studenta. Nepoužívej hvězdičky pro nadpisy." },
+          { role: "user", content: `Původní podklady látky:\n${getCombinedNotes()}\n\nNové přání studenta k úpravě: ${userInstruction}` }
+        ]);
+        renderOutputView({ title: title + ' (Upraveno)', content: newResponse });
+      } catch(e) {
+        alert('Chyba: ' + e.message);
+        nav('home');
+      }
+    }
+
+    function renderVkladani() {
+      const app = document.getElementById('app');
+      let subOptions = state.subjects.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+      app.innerHTML = `
+        <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
+        <h2 class="text-2xl font-black">Vložit celý sešit</h2>
+        <p class="text-slate-400 text-xs mb-5">AI sama rozdělí i obří sešit na jednotlivé kapitoly.</p>
+        <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">1. Předmět</label>
+            ${state.subjects.length > 0 ? `
+              <div class="mb-2">
+                <select id="selectSub" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200" onchange="toggleCustomSub(this)">
+                  <option value="">-- Vyber existující předmět --</option>
+                  ${subOptions}
+                  <option value="__NEW__">➕ Zadat nový předmět...</option>
+                </select>
+              </div>
+            ` : ''}
+            <input id="inputSubName" type="text" placeholder="Zadej název předmětu (např. Dějepis)" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 ${state.subjects.length > 0 ? 'hidden' : ''}">
+          </div>
+          <div class="pt-3 border-t border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost A: Vybrat fotky sešitu (Galerie / Foťák)</label>
+            <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-400 transition">
+              <span class="text-3xl">📸</span>
+              <span class="text-sm font-bold mt-2 text-amber-400">Vybrat fotky sešitu</span>
+              <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
+            </label>
+          </div>
+          <div class="pt-3 border-t border-slate-800">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit text z Apple Notes</label>
+            <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
+            <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
+              ⚡ Rozdělit sešit na témata
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleCustomSub(selectEl) {
+      const input = document.getElementById('inputSubName');
+      if (selectEl && input) {
+        if (selectEl.value === '__NEW__') { input.classList.remove('hidden'); input.focus(); }
+        else { input.classList.add('hidden'); }
+      }
+    }
+
+    function getResolvedSubjectName() {
+      const select = document.getElementById('selectSub');
+      const input = document.getElementById('inputSubName');
+      if (select && select.value && select.value !== '__NEW__') return select.value.trim();
+      if (input && input.value) return input.value.trim();
+      return '';
+    }
+
     function renderManageSubjects() {
       const app = document.getElementById('app');
       let html = state.subjects.map(sub => `
@@ -924,7 +925,7 @@
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">StudyApp (Groq LPU Engine)</p>
+        <p class="text-xs text-slate-400 mb-4">StudyApp v21.0 (Chunking Engine)</p>
         
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
           <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace (PC ↔ iPad ↔ iPhone)</h3>
