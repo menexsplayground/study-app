@@ -3,22 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>StudyApp v18.0</title>
+  <title>StudyApp - Dalí Edition</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#090d16', cardBg: '#131b2e' } } } }
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#080c14', cardBg: '#111827' } } } }
   </script>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <header class="p-4 pt-6 md:pt-4 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/90 backdrop-blur-md sticky top-0 z-50">
-    <div class="flex items-center gap-2">
-      <button onclick="nav('home')" class="text-xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent flex items-center gap-1.5">
-        <span>⚡</span> StudyApp
+  <!-- TOP BAR S DALÍHO SLONEM -->
+  <header class="p-3 pt-6 md:pt-4 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <!-- Ikona: Dalího slon na dlouhých nohách s obeliskem -->
+      <button onclick="nav('home')" class="flex items-center gap-2 group">
+        <svg class="w-8 h-10 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)] transition-transform group-hover:scale-105" viewBox="0 0 100 120" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Obelisk na hřbetě -->
+          <polygon points="50,6 45,35 55,35" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="2"/>
+          <line x1="43" y1="35" x2="57" y2="35" stroke="currentColor" stroke-width="2.5"/>
+          <!-- Tělo slona -->
+          <path d="M38,40 C32,40 28,45 28,52 C28,58 34,62 42,62 L58,62 C66,62 72,57 72,50 C72,42 66,38 58,38 Z" fill="currentColor" fill-opacity="0.2"/>
+          <!-- Chobot a kly -->
+          <path d="M32,45 C27,45 24,48 24,53 C22,60 19,68 15,70 C13,71 11,69 13,67 C16,64 18,56 19,50" />
+          <path d="M25,55 C22,57 19,56 17,53" stroke-width="1.8"/>
+          <!-- Typické Dalího předlouhé pavoučí nohy -->
+          <path d="M35,62 L32,84 L29,114"/>
+          <circle cx="32" cy="84" r="1.5" fill="currentColor"/>
+          <path d="M42,62 L40,86 L37,114"/>
+          <circle cx="40" cy="86" r="1.5" fill="currentColor"/>
+          <path d="M57,62 L60,84 L63,114"/>
+          <circle cx="60" cy="84" r="1.5" fill="currentColor"/>
+          <path d="M66,62 L69,87 L73,114"/>
+          <circle cx="69" cy="87" r="1.5" fill="currentColor"/>
+        </svg>
+        <span class="text-xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
+          StudyApp
+        </span>
       </button>
-      <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40">v18.0 Groq 100% OK</span>
+      <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40">Dalí Edition</span>
     </div>
     <div class="flex gap-2 items-center">
       <span id="cloudBadge" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold border border-slate-700/60">☁️ Cloud</span>
@@ -32,9 +55,11 @@
   <script>
     const CONFIG = { owner: 'menexsplayground', repo: 'study-app', dataFile: 'data.json' };
     
-    // TVŮJ KLÍČ GROQ - PŘESNĚ A BEZ CHYBY:
+    // TVÉ ZABUDOVANÉ KLÍČE:
     const HARDCODED_GROQ_KEY = 'gsk_' + '5TQag0yxwZLoUiOx25wdWGdyb3FYqdOa32vCmJGdHOxyOOUtsagG';
     const HARDCODED_GH_TOKEN = 'ghp_' + 'WbgP3huSoHrwrzl0ggaZVb7cVSAAnF3KnRYt';
+
+    let cachedActiveGroqModel = null;
 
     function loadCleanSubjects() {
       try {
@@ -61,8 +86,6 @@
       oralExamHistory: [],
       currentTestPrompt: ''
     };
-
-    localStorage.setItem('groq_key', state.apiKey);
 
     function setCloudStatus(type, text) {
       const badge = document.getElementById('cloudBadge');
@@ -311,9 +334,41 @@
       `;
     }
 
-    // --- SPOLEHLIVÉ VOLÁNÍ GROQ API S PŘESNÝM KLÍČEM ---
-    async function executeGroqChat(messages, isJson = false, model = 'llama-3.3-70b-versatile') {
+    // --- AUTO-DISCOVERY: DYNAMICKÉ ZJIŠTĚNÍ AKTIVNÍHO MODELU NA GROQU ---
+    async function getActiveGroqModel() {
+      if (cachedActiveGroqModel) return cachedActiveGroqModel;
       const key = state.apiKey.trim();
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/models', {
+          headers: { 'Authorization': `Bearer ${key}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.data && Array.isArray(json.data)) {
+            const availableIds = json.data.map(m => m.id);
+            // Hledáme aktuální nejlepší modely (GPT-OSS 120B / Qwen 3.8 / GPT-OSS 20B)
+            const preferred = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
+            for (const p of preferred) {
+              if (availableIds.includes(p)) {
+                cachedActiveGroqModel = p;
+                return p;
+              }
+            }
+            if (availableIds.length > 0) {
+              cachedActiveGroqModel = availableIds[0];
+              return availableIds[0];
+            }
+          }
+        }
+      } catch(e) {}
+      cachedActiveGroqModel = 'openai/gpt-oss-120b';
+      return cachedActiveGroqModel;
+    }
+
+    async function executeGroqChat(messages, isJson = false) {
+      const key = state.apiKey.trim();
+      const model = await getActiveGroqModel();
+      
       const payload = {
         model: model,
         messages: messages,
@@ -341,7 +396,7 @@
         throw new Error('Groq nevrátil žádnou odpověď.');
       }
 
-      return data.choices[0].message.content;
+      return { text: data.choices[0].message.content, model };
     }
 
     function extractTopicsList(rawText) {
@@ -372,7 +427,7 @@
       ];
 
       try {
-        const raw = await executeGroqChat(messages, true);
+        const { text: raw, model } = await executeGroqChat(messages, true);
         const topicsList = extractTopicsList(raw);
         if (!topicsList.length) throw new Error('AI nenašla v textu žádné nadpisy.');
 
@@ -387,7 +442,7 @@
         });
         
         await pushToCloud();
-        alert(`🎉 Hotovo! Sešit "${subName}" byl za sekundu rozdělen na ${topicsList.length} kapitol.`);
+        alert(`🎉 Hotovo! Sešit "${subName}" byl přes model ${model} rozdělen na ${topicsList.length} kapitol.`);
         nav('home');
       } catch (err) {
         alert('CHYBA: ' + err.message);
@@ -401,7 +456,7 @@
       if (!subName) { alert('Nejprve vyber předmět!'); return; }
       const count = input.files.length;
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><h2 class="text-xl font-bold mb-1">Groq čte fotky sešitu (${count} fotek)...</h2></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><h2 class="text-xl font-bold mb-1">Čtu fotky sešitu (${count} fotek)...</h2></div>`;
 
       try {
         const userContents = [{ type: "text", text: `Předmět: ${subName}. Přečti sešit, najdi nadpisy a rozděl ho na témata. Vrať JSON objekt s klíčem 'topics' obsahující pole objektů s klíči 'title' a 'content'.` }];
@@ -411,7 +466,17 @@
           userContents.push({ type: "image_url", image_url: { url: `data:${file.type};base64,${b64}` } });
         }
 
-        const raw = await executeGroqChat([{ role: "user", content: userContents }], true, 'llama-3.2-11b-vision-preview');
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey.trim()}` },
+          body: JSON.stringify({
+            model: 'qwen/qwen3.8-27b',
+            messages: [{ role: "user", content: userContents }],
+            response_format: { type: "json_object" }
+          })
+        });
+        const data = await res.json();
+        const raw = data.choices[0].message.content;
         const topicsList = extractTopicsList(raw);
         
         let sub = state.subjects.find(s => s && s.name && s.name.toLowerCase() === subName.toLowerCase());
@@ -424,7 +489,7 @@
           }
         });
         await pushToCloud();
-        alert(`🎉 Hotovo! Sešit "${subName}" byl rozdělen na ${topicsList.length} kapitol.`);
+        alert(`🎉 Hotovo! Sešit byl rozdělen na ${topicsList.length} kapitol.`);
         nav('home');
       } catch (err) {
         alert('CHYBA: ' + err.message);
@@ -451,7 +516,7 @@
       else if (type === 'predzvonici') prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a vzorce.";
 
       try {
-        const response = await executeGroqChat([
+        const { text: response } = await executeGroqChat([
           { role: "system", content: sys },
           { role: "user", content: prompt }
         ]);
@@ -466,7 +531,7 @@
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje kartičky...</p></div>`;
       try {
-        const raw = await executeGroqChat([
+        const { text: raw } = await executeGroqChat([
           { role: "system", content: "Vytvoř 8 kartiček k látce. Vrať VÝHRADNĚ JSON s klíčem 'cards' obsahující pole objektů s klíči 'q' a 'a'." },
           { role: "user", content: getCombinedNotes() }
         ], true);
@@ -507,7 +572,7 @@
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq připravuje test...</p></div>`;
       try {
-        const response = await executeGroqChat([
+        const { text: response } = await executeGroqChat([
           { role: "system", content: "Vytvoř zkušební test o 4 otázkách k následujícím kapitolám. Napiš otázky a neuváděj správné odpovědi." },
           { role: "user", content: getCombinedNotes() }
         ]);
@@ -533,7 +598,7 @@
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq opravuje test a počítá známku...</p></div>`;
       const prompt = `TEST:\n${state.currentTestPrompt}\n\nODPOVĚDI STUDENTA:\n${answers}\n\nPODKLADY Z LÁTKY:\n${getCombinedNotes()}`;
       try {
-        const evaluation = await executeGroqChat([
+        const { text: evaluation } = await executeGroqChat([
           { role: "system", content: "Jsi spravedlivý učitel. Zhodnoť odpovědi, dej známku 1-5 a vysvětli chyby." },
           { role: "user", content: prompt }
         ]);
@@ -575,7 +640,7 @@
       state.oralExamHistory.push({ role: 'user', content: val });
       renderOralExamView();
       try {
-        const reply = await executeGroqChat([
+        const { text: reply } = await executeGroqChat([
           { role: "system", content: `Jsi učitel u tabule. V 2-3 větách zhodnoť odpověď a polož další otázku k látce:\n${getCombinedNotes()}` },
           ...state.oralExamHistory
         ]);
@@ -593,7 +658,7 @@
       `).join('');
       app.innerHTML = `
         <button onclick="nav('uceniHub')" class="text-xs text-slate-400 mb-3">← Zpět</button>
-        <h2 class="text-xl font-bold mb-3">Doučovatel (Groq 70B)</h2>
+        <h2 class="text-xl font-bold mb-3">Doučovatel</h2>
         <div class="space-y-3 mb-4 max-h-[55vh] overflow-y-auto">${msgs || '<p class="text-xs text-slate-500">Zeptej se na cokoliv z vybraných kapitol...</p>'}</div>
         <div class="flex gap-2">
           <input id="chatInput" type="text" placeholder="Na co se chceš zeptat?..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
@@ -609,7 +674,7 @@
       state.chatHistory.push({ role: 'user', text: val });
       renderChatView();
       try {
-        const reply = await executeGroqChat([
+        const { text: reply } = await executeGroqChat([
           { role: "system", content: `Jsi trpělivý osobní lektor. Odpovídej věcně a stručně k této látce:\n${getCombinedNotes()}` },
           ...state.chatHistory
         ]);
@@ -660,7 +725,7 @@
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit text z Apple Notes</label>
             <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
             <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
-              ⚡ Rozdělit sešit na témata (Groq)
+              ⚡ Rozdělit sešit na témata
             </button>
           </div>
         </div>
@@ -720,7 +785,7 @@
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">Verze v18.0 (Groq Llama 3.3 70B & Vision)</p>
+        <p class="text-xs text-slate-400 mb-4">Verze v19.0 Dalí Edition (Groq Auto-Discovery)</p>
         
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-2 mb-5">
           <label class="block text-xs font-bold text-slate-400 uppercase">Aktivní Groq API Klíč</label>
@@ -741,7 +806,7 @@
         </div>
 
         <button onclick="testKeyNow()" class="w-full py-3 bg-amber-600/30 border border-amber-500 text-amber-300 font-bold rounded-lg text-xs mb-3">
-          ⚡ Otestovat spojení s Groq AI (Llama 70B)
+          ⚡ Otestovat spojení a zjistit aktivní model
         </button>
         <div id="testResult" class="text-xs mb-4 font-medium"></div>
 
@@ -753,10 +818,10 @@
 
     async function testKeyNow() {
       const div = document.getElementById('testResult');
-      div.innerHTML = '<span class="text-amber-400">⚡ Testuji spojení s Groq Llama 3.3 70B...</span>';
+      div.innerHTML = '<span class="text-amber-400">⚡ Zjišťuji dostupné modely a testuji spojení...</span>';
       try {
-        const reply = await executeGroqChat([{ role: "user", content: "Odpověz jedním slovem: FUNGUJE" }]);
-        div.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE OKAMŽITĚ! Odpověď: "${reply.trim()}"</span>`;
+        const { text, model } = await executeGroqChat([{ role: "user", content: "Odpověz jedním slovem: FUNGUJE" }]);
+        div.innerHTML = `<span class="text-emerald-400 font-bold">✅ VŠE FUNGUJE OKAMŽITĚ!</span><br><span class="text-xs text-slate-300">Aktivní model v tvém účtu: <b>${model}</b> (Odpověď: "${text.trim()}")</span>`;
       } catch (e) {
         div.innerHTML = `<span class="text-red-400 font-bold">❌ Chyba: ${e.message}</span>`;
       }
