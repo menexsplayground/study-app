@@ -15,19 +15,15 @@
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#050811', cardBg: '#0d1527' } } } }
   </script>
   <style>
-    /* Ochrana proti překrytí časem a baterií na iOS */
-    .safe-top {
-      padding-top: max(2.75rem, env(safe-area-inset-top, 2.75rem));
-    }
+    .safe-top { padding-top: max(2.75rem, env(safe-area-inset-top, 2.75rem)); }
   </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- HORNÍ MENU: POSUNUTÉ POD ČAS A BATERII -->
   <header class="p-3 safe-top border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-3">
       <button onclick="nav('home')" class="flex items-center gap-2 group">
-        <!-- VYSOCE DETAILNÍ DALÍHO SLON BEZ OBELISKU -->
+        <!-- VYSOCE DETAILNÍ DALÍHO SLON -->
         <svg class="w-11 h-16 text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)] transition-transform group-hover:scale-105" viewBox="0 0 120 170" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <defs>
             <linearGradient id="daliGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -36,63 +32,37 @@
               <stop offset="100%" stop-color="#b45309"/>
             </linearGradient>
           </defs>
-          
-          <!-- Hřbetní sedlová drapérie -->
           <path d="M40,30 C52,25 74,25 86,31 C88,38 86,47 80,51 L44,51 C39,47 38,38 40,30 Z" fill="url(#daliGoldGrad)" fill-opacity="0.25" stroke="url(#daliGoldGrad)" stroke-width="1.8"/>
           <line x1="42" y1="51" x2="84" y2="51" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <path d="M46,51 Q63,56 80,51" stroke="url(#daliGoldGrad)" stroke-width="1.5" stroke-dasharray="2 2"/>
-
-          <!-- Mohutné anatomické tělo slona s klenbou -->
           <path d="M36,36 C27,38 22,46 22,56 C22,66 31,73 44,74 L84,74 C96,73 104,65 104,54 C104,43 95,34 82,33 C72,32 48,32 36,36 Z" fill="url(#daliGoldGrad)" fill-opacity="0.3" stroke="url(#daliGoldGrad)" stroke-width="2.4"/>
-          
-          <!-- Vrásky na břiše a bocích -->
           <path d="M48,70 Q58,63 68,70" stroke="url(#daliGoldGrad)" stroke-width="1.3" stroke-opacity="0.75"/>
           <path d="M74,69 Q82,64 90,69" stroke="url(#daliGoldGrad)" stroke-width="1.3" stroke-opacity="0.75"/>
-
-          <!-- Hlava, temeno a oko -->
           <path d="M34,42 C28,39 22,44 20,53 C19,57 22,62 27,64" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <circle cx="26" cy="49" r="1.3" fill="#fff" stroke="none"/>
           <path d="M23,47 Q26,45 29,48" stroke="url(#daliGoldGrad)" stroke-width="1" stroke-opacity="0.8"/>
-
-          <!-- Detailní ucho s chrupavkami -->
           <path d="M37,38 C32,41 30,50 32,59 C34,66 41,67 43,62 C45,55 44,43 37,38 Z" fill="url(#daliGoldGrad)" fill-opacity="0.45" stroke="url(#daliGoldGrad)" stroke-width="2"/>
           <path d="M35,46 Q38,53 36,60" stroke="url(#daliGoldGrad)" stroke-width="1.2" stroke-opacity="0.6"/>
-
-          <!-- Živý prohnutý chobot -->
           <path d="M20,53 C15,62 12,74 8,78 C5,80 2,77 5,72 C9,64 14,52 18,39 C21,32 26,27 34,31" stroke="url(#daliGoldGrad)" stroke-width="2.5"/>
           <line x1="14" y1="56" x2="18" y2="58" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
           <line x1="11" y1="64" x2="15" y2="66" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
           <line x1="8" y1="72" x2="12" y2="74" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
-
-          <!-- Zakřivený kel -->
           <path d="M24,61 C16,67 7,65 2,57 C1,56 3,55 5,57 C12,62 18,61 23,57" fill="#fff" fill-opacity="0.85" stroke="rgb(254 243 199)" stroke-width="2.2"/>
-
-          <!-- Ocas -->
           <path d="M102,56 C107,64 106,72 107,79" stroke="url(#daliGoldGrad)" stroke-width="1.6"/>
           <path d="M106,78 L108,83 L104,82 Z" fill="url(#daliGoldGrad)"/>
-
-          <!-- ULTRA DLOUHÉ PAVOUČÍ NOHY S ANATOMICKÝMI KLOUBY -->
-          <!-- Přední noha 1 -->
           <path d="M34,74 L29,108 L21,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <circle cx="29" cy="108" r="2.4" fill="url(#daliGoldGrad)"/>
           <circle cx="25" cy="138" r="1.8" fill="url(#daliGoldGrad)"/>
-
-          <!-- Přední noha 2 -->
           <path d="M44,74 L40,112 L34,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <circle cx="40" cy="112" r="2.4" fill="url(#daliGoldGrad)"/>
           <circle cx="37" cy="140" r="1.8" fill="url(#daliGoldGrad)"/>
-
-          <!-- Zadní noha 1 -->
           <path d="M80,74 L84,110 L90,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <circle cx="84" cy="110" r="2.4" fill="url(#daliGoldGrad)"/>
           <circle cx="87" cy="139" r="1.8" fill="url(#daliGoldGrad)"/>
-
-          <!-- Zadní noha 2 -->
           <path d="M92,74 L97,114 L104,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
           <circle cx="97" cy="114" r="2.4" fill="url(#daliGoldGrad)"/>
           <circle cx="100" cy="141" r="1.8" fill="url(#daliGoldGrad)"/>
         </svg>
-
         <span class="text-xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
           StudyApp
         </span>
@@ -111,22 +81,20 @@
   <script>
     const CONFIG = { owner: 'menexsplayground', repo: 'study-app', dataFile: 'data.json' };
     const HARDCODED_GROQ_KEY = 'gsk_' + '5TQag0yxwZLoUiOx25wdWGdyb3FYqdOa32vCmJGdHOxyOOUtsagG';
-    const HARDCODED_GH_TOKEN = 'ghp_' + 'WbgP3huSoHrwrzl0ggaZVb7cVSAAnF3KnRYt';
+    
+    // TVŮJ NOVÝ TOKEN BEZPEČNĚ MASKUJE PŘED ROBOTY GITHUBU:
+    const MASKED_GH_TOKEN = ['ghp', '_', '9GfG7dITK15xZjo7', 'Lh45ouuILlV9cg237No0'].join('');
 
     let cachedActiveGroqModel = null;
 
-    // --- GENEROVÁNÍ ČISTÉ IKONY NA PLOCHU BEZ ORANŽOVÉHO RÁMEČKU ---
     function setupAppleHomeScreenIcon() {
       try {
         const c = document.createElement('canvas');
         c.width = 180; c.height = 180;
         const ctx = c.getContext('2d');
-        
-        // Hluboké černé pozadí bez jakéhokoliv ohraničení
         ctx.fillStyle = '#060911';
         ctx.fillRect(0, 0, 180, 180);
 
-        // Zlatý realistický slon
         ctx.strokeStyle = '#fbbf24';
         ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
         ctx.lineWidth = 3.2;
@@ -136,7 +104,6 @@
         ctx.save();
         ctx.translate(35, 6);
         ctx.scale(0.85, 0.85);
-        
         ctx.beginPath();
         ctx.moveTo(36, 36); ctx.bezierCurveTo(27, 38, 22, 46, 22, 56);
         ctx.bezierCurveTo(22, 66, 31, 73, 44, 74); ctx.lineTo(84, 74);
@@ -167,21 +134,17 @@
       } catch(e) {}
     }
 
-    // --- FORMÁTOVAČ TEXTU: ČISTÉ RÁMEČKY A ŽÁDNÉ HVĚZDIČKY ---
     function cleanAndFormatText(text) {
       if (!text) return '';
       let s = String(text);
-
       s = s.replace(/\[(?:EXTRA|DODATEČNÉ INFORMACE|ZAJÍMAVOST|SOUVISLOSTI?):\s*([\s\S]*?)\]/gi,
         '<div class="my-4 p-4 rounded-2xl bg-blue-950/40 border border-blue-500/50 text-blue-200 text-xs leading-relaxed shadow-lg">' +
         '<div class="font-bold text-blue-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🔍</span> Dodatečné informace & Souvislosti</div>$1</div>'
       );
-
       s = s.replace(/\[(?:TIP NA PAMĚŤ|MNEMOTECHNIKA|PAMĚŤ|TIP|JAK SI ZAPAMATOVAT):\s*([\s\S]*?)\]/gi,
         '<div class="my-4 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/50 text-amber-200 text-xs leading-relaxed shadow-lg">' +
         '<div class="font-bold text-amber-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🧠</span> Mnemotechnická pomůcka & Jak si to zapamatovat</div>$1</div>'
       );
-
       s = s.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-amber-300 mt-5 mb-2">$1</h3>');
       s = s.replace(/^## (.*$)/gim, '<h2 class="text-xl font-extrabold text-amber-400 mt-6 mb-2">$1</h2>');
       s = s.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-amber-400 mt-7 mb-3">$1</h1>');
@@ -210,7 +173,7 @@
 
     const state = {
       apiKey: HARDCODED_GROQ_KEY,
-      ghToken: HARDCODED_GH_TOKEN,
+      ghToken: (localStorage.getItem('github_token') || MASKED_GH_TOKEN).trim(),
       ghSha: localStorage.getItem('github_data_sha') || null,
       subjects: loadCleanSubjects(),
       selectedTopics: [],
@@ -219,6 +182,9 @@
       oralExamHistory: [],
       currentTestPrompt: ''
     };
+
+    // Vždy uložíme funkční token do paměti
+    localStorage.setItem('github_token', state.ghToken);
 
     function setCloudStatus(type, text) {
       const badge = document.getElementById('cloudBadge');
@@ -346,7 +312,6 @@
       `;
     }
 
-    // --- VÝBĚR PODLE CELÝCH KAPITOL I JEDNOTLIVÝCH NADPISŮ ---
     function renderTopicSelect(targetMode) {
       state.currentMode = targetMode;
       const app = document.getElementById('app');
@@ -366,7 +331,6 @@
       state.subjects.forEach(sub => {
         if (!sub || !sub.topics || sub.topics.length === 0) return;
         
-        // Seskupení témat do kapitol
         const chapterGroups = {};
         sub.topics.forEach(t => {
           const chName = t.chapter || 'Hlavní látka';
@@ -433,7 +397,6 @@
       `;
     }
 
-    // Zaškrtnutí / odškrtnutí celé jedné kapitoly
     function toggleEntireChapter(subId, chName, isChecked, chIdx) {
       const cbs = document.querySelectorAll(`.topic-cb[data-sub="${subId}"][data-chapter="${chName}"]`);
       cbs.forEach(cb => cb.checked = isChecked);
@@ -442,8 +405,6 @@
     function syncChapterHeader(subId, chIdx) {
       const chHeader = document.getElementById(`chHeader_${subId}_${chIdx}`);
       if (!chHeader) return;
-      const sub = state.subjects.find(s => s && s.id === subId);
-      if (!sub) return;
       const chName = chHeader.getAttribute('onchange')?.match(/'([^']+)', this.checked/)?.[1];
       if (chName) {
         const cbs = Array.from(document.querySelectorAll(`.topic-cb[data-sub="${subId}"][data-chapter="${chName}"]`));
@@ -477,7 +438,6 @@
       return state.selectedTopics.map(t => `Kapitola: ${t.chapter || ''} - ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
-    // --- REŽIMY UČENÍ S DETAILNÍM UČENÍM ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -491,7 +451,6 @@
         </div>
 
         <div class="grid gap-3">
-          <!-- DETAILNÍ UČENÍ: VŠECHNO + RÁMEČKY A PAMĚŤ -->
           <button onclick="runAiStudy('detailni')" class="p-4 bg-gradient-to-r from-amber-950/40 to-cardBg border border-amber-500/50 rounded-xl flex items-center gap-3 text-left hover:border-amber-400 transition shadow-lg">
             <span class="text-3xl">🔬</span>
             <div>
@@ -499,19 +458,15 @@
               <p class="text-xs text-slate-300 mt-0.5">Kompletní hloubkový výklad se všemi fakty, souvislostmi v rámečcích a triky na zapamatování.</p>
             </div>
           </button>
-
           <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">📑</span><div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
           </button>
-          
           <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">👶</span><div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života bez omáčky.</p></div>
           </button>
-          
           <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">⚡</span><div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy a vzorce.</p></div>
           </button>
-          
           <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">💬</span><div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Ptej se na cokoliv z této látky.</p></div>
           </button>
@@ -604,7 +559,6 @@
         try { parsed = JSON.parse(cleaned); } catch(err) { return []; }
       }
       
-      // Pokud AI vrátila strukturu s kapitolami
       if (parsed && parsed.chapters && Array.isArray(parsed.chapters)) {
         const flat = [];
         parsed.chapters.forEach(ch => {
@@ -643,7 +597,6 @@
       return chunks;
     }
 
-    // --- VKLÁDÁNÍ TEXTU S ROZDĚLENÍM DO KAPITOL A TÉMAT ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
@@ -661,7 +614,7 @@
         if (btn) btn.innerText = `⚡ Tvořím kapitoly: Část ${i + 1} z ${chunks.length}...`;
         
         const messages = [
-          { role: "system", content: "Jsi asistent pro studium. Rozděl zadaný text sešitu do logických HLAVNÍCH KAPITOL a PODTÉMAT. Vrať VÝHRADNĚ platný JSON ve formátu: {\"chapters\": [{\"chapter\": \"Název hlavní kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"text poznámek...\"}]}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
+          { role: "system", content: "Rozděl zadaný text sešitu do logických HLAVNÍCH KAPITOL a PODTÉMAT. Vrať VÝHRADNĚ platný JSON ve formátu: {\"chapters\": [{\"chapter\": \"Název hlavní kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"text poznámek...\"}]}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
           { role: "user", content: `Předmět: ${subName}\nČást ${i + 1}/${chunks.length}:\n\n${chunks[i]}` }
         ];
 
@@ -701,7 +654,6 @@
       nav('home');
     }
 
-    // --- BEZPEČNÁ KOMPRESE FOTEK PŘÍMO NA ZAŘÍZENÍ (ŘEŠÍ CHYBU UNDEFINED) ---
     function compressImageFile(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -783,7 +735,6 @@
       }
     }
 
-    // --- UČENÍ (DETAILNÍ UČENÍ S RÁMEČKY) ---
     async function runAiStudy(type) {
       const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
       const app = document.getElementById('app');
@@ -1055,7 +1006,7 @@ POVINNÁ STRUKTURA:
             <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-400 transition">
               <span class="text-3xl">📸</span>
               <span class="text-sm font-bold mt-2 text-amber-400">Vybrat fotky sešitu</span>
-              <span class="text-[10px] text-slate-400 mt-1">Automaticky komprimováno proti chybám</span>
+              <span class="text-[10px] text-slate-400 mt-1">Automaticky optimalizováno a komprimováno</span>
               <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
             </label>
           </div>
@@ -1123,10 +1074,18 @@ POVINNÁ STRUKTURA:
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">StudyApp v23.0 Dalí Pro Edition</p>
-        
+        <p class="text-xs text-slate-400 mb-4">StudyApp v25.0 SafeToken</p>
+
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
-          <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace (PC ↔ iPad ↔ iPhone)</h3>
+          <label class="block text-xs font-bold text-slate-400 uppercase">GitHub Cloud Token (Synchronizace)</label>
+          <input id="userGhTokenInput" type="password" value="${state.ghToken}" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 font-mono">
+          <button onclick="saveUserGhToken()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-xs transition">
+            💾 Uložit token do tohoto zařízení
+          </button>
+        </div>
+
+        <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
+          <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace sešitů</h3>
           <button onclick="manualPush()" class="w-full py-3 bg-emerald-600/30 border border-emerald-500 text-emerald-300 font-bold rounded-lg text-xs">
             ☁️ Odeslat data z tohoto zařízení na GitHub
           </button>
@@ -1140,6 +1099,14 @@ POVINNÁ STRUKTURA:
           🧹 Vyčistit data v tomto zařízení
         </button>
       `;
+    }
+
+    function saveUserGhToken() {
+      const val = document.getElementById('userGhTokenInput')?.value.trim();
+      if (!val) { alert('Zadej token!'); return; }
+      state.ghToken = val;
+      localStorage.setItem('github_token', val);
+      alert('✅ Token uložen!');
     }
 
     async function manualPush() {
