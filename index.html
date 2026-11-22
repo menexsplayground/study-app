@@ -15,7 +15,6 @@
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#050811', cardBg: '#0d1527' } } } }
   </script>
   <style>
-    /* Stoprocentní ochrana proti překrytí časem, datem a baterií na iOS */
     .header-safe {
       padding-top: calc(env(safe-area-inset-top, 44px) + 0.85rem) !important;
     }
@@ -23,7 +22,7 @@
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- ZÁHLAVÍ POSUNUTÉ BEZPEČNĚ POD ČAS A BATERII -->
+  <!-- ZÁHLAVÍ S OCHRANOU PROTI PŘEKRYTÍ ČASEM A BATERIÍ -->
   <header class="p-3 header-safe border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-3">
       <button onclick="nav('home')" class="flex items-center gap-2 group">
@@ -77,7 +76,6 @@
 
     let cachedActiveGroqModel = null;
 
-    // --- ČISTÁ IKONA BEZ RÁMEČKU ---
     function setupAppleHomeScreenIcon() {
       try {
         const c = document.createElement('canvas');
@@ -101,7 +99,8 @@
         ctx.fill(); ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(20, 53); ctx.bezierCurveTo(15, 62, 12, 74, 8, 78);
-        ctx.bezierCurveTo(5, 80, 2, 77, 5, 72); ctx.bezierCurveTo(9, 64, 14, 52, 18, 39); ctx.stroke();
+        ctx.bezierCurveTo(5, 80, 2, 77, 5, 72); ctx.bezierCurveTo(9, 64, 14, 52, 18, 39);
+        ctx.stroke();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4;
         ctx.beginPath(); ctx.moveTo(24, 61); ctx.bezierCurveTo(16, 67, 7, 65, 2, 57); ctx.stroke();
         ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2.8;
@@ -114,7 +113,6 @@
       } catch(e) {}
     }
 
-    // --- FORMÁTOVAČ TEXTU: ŽÁDNÉ HVĚZDIČKY ANI MŘÍŽKY ---
     function cleanAndFormatText(text) {
       if (!text) return '';
       let s = String(text);
@@ -159,20 +157,9 @@
       subjects: loadCleanSubjects(),
       selectedTopics: [],
       currentMode: null,
-      // Nastavení zkoušení
-      examScope: 'standard', // 'quick' | 'standard' | 'deep'
-      testType: 'open',      // 'open' | 'multiple'
-      // Stav ústního zkoušení
-      oral: {
-        score: 0,
-        maxScore: 0,
-        qIndex: 0,
-        totalQ: 5,
-        currentQuestion: '',
-        history: [],
-        lastFeedback: ''
-      },
-      // Stav testu
+      examScope: 'standard',
+      testType: 'open',
+      oral: { score: 0, maxScore: 0, qIndex: 0, totalQ: 5, currentQuestion: '', history: [] },
       currentGeneratedTest: []
     };
 
@@ -291,7 +278,7 @@
         <div class="grid gap-4 mt-8">
           <button onclick="nav('topicSelect', 'uceni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-amber-500/30 flex items-center gap-4 text-left hover:border-amber-500 active:scale-95 transition">
             <span class="text-4xl">📖</span>
-            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Detailní učení, shrnutí, ELI5 i rychlokurz.</p></div>
+            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Normální učení bez omáčky, detailní výklad i shrnutí.</p></div>
           </button>
           <button onclick="nav('topicSelect', 'zkouseni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left hover:border-purple-500 active:scale-95 transition">
             <span class="text-4xl">🎯</span>
@@ -432,13 +419,13 @@
       return state.selectedTopics.map(t => `Kapitola: ${t.chapter || ''} - ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
-    // --- REŽIMY UČENÍ ---
+    // --- REŽIMY UČENÍ S NORMÁLNÍM UČENÍM ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
         <button onclick="nav('topicSelect', 'uceni')" class="text-xs text-slate-400 mb-3">← Změnit okruhy</button>
         <h2 class="text-2xl font-black mb-1">Režimy učení</h2>
-        <p class="text-xs text-amber-400 mb-4 font-semibold">Vybráno témat: ${state.selectedTopics.length}</p>
+        <p class="text-xs text-amber-400 mb-4 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
 
         <div class="mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
           <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">💡 Máš speciální přání pro AI? (volitelné)</label>
@@ -446,6 +433,16 @@
         </div>
 
         <div class="grid gap-3">
+          <!-- NOVÁ FUNKCE: NORMÁLNÍ UČENÍ (BEZ OMÁČKY) -->
+          <button onclick="runNormalStudy()" class="p-4 bg-gradient-to-r from-blue-950/40 to-cardBg border border-blue-500/50 rounded-xl flex items-center gap-3 text-left hover:border-blue-400 transition shadow-lg">
+            <span class="text-3xl">📖</span>
+            <div>
+              <h3 class="font-bold text-blue-300">Normální učení (Přesné zápisky bez omáčky)</h3>
+              <p class="text-xs text-slate-300 mt-0.5">Okamžité zobrazení tvých původních výpisků přesně tak, jak jsi je zadal – bez AI výmyslů a omáčky okolo.</p>
+            </div>
+          </button>
+
+          <!-- DETAILNÍ UČENÍ -->
           <button onclick="runAiStudy('detailni')" class="p-4 bg-gradient-to-r from-amber-950/40 to-cardBg border border-amber-500/50 rounded-xl flex items-center gap-3 text-left hover:border-amber-400 transition shadow-lg">
             <span class="text-3xl">🔬</span>
             <div>
@@ -453,15 +450,19 @@
               <p class="text-xs text-slate-300 mt-0.5">Kompletní hloubkový výklad se všemi fakty, souvislostmi v rámečcích a triky na zapamatování.</p>
             </div>
           </button>
+
           <button onclick="runAiStudy('shrnuti')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">📑</span><div><h3 class="font-bold">Shrnutí látky</h3><p class="text-xs text-slate-400">Přehledný strukturovaný výtah v bodech.</p></div>
           </button>
+          
           <button onclick="runAiStudy('eli5')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">👶</span><div><h3 class="font-bold">Nauč mě jako pro hlupáka (ELI5)</h3><p class="text-xs text-slate-400">Vtipné analogie ze života bez omáčky.</p></div>
           </button>
+          
           <button onclick="runAiStudy('predzvonici')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">⚡</span><div><h3 class="font-bold text-amber-400">Předzvonící rychloučení</h3><p class="text-xs text-slate-400">3 minuty před testem: nejdůležitější pojmy a vzorce.</p></div>
           </button>
+          
           <button onclick="nav('chat')" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700">
             <span class="text-2xl">💬</span><div><h3 class="font-bold text-blue-400">Osobní doučovatel</h3><p class="text-xs text-slate-400">Ptej se na cokoliv z této látky.</p></div>
           </button>
@@ -469,7 +470,16 @@
       `;
     }
 
-    // --- REŽIMY ZKOUŠENÍ S NASTAVENÍM OBSÁHLOSTI A FORMÁTU ---
+    // NORMÁLNÍ UČENÍ: POUZE PŘESNÉ ZÁPISKY STUDENTA
+    function runNormalStudy() {
+      let output = '';
+      state.selectedTopics.forEach(t => {
+        output += `### ${t.chapter ? t.chapter + ' - ' : ''}${t.title}\n${t.content}\n\n`;
+      });
+      nav('result', { title: 'Moje zápisky (Normální učení bez omáčky)', content: output });
+    }
+
+    // --- REŽIMY ZKOUŠENÍ ---
     function renderZkouseniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -477,7 +487,6 @@
         <h2 class="text-2xl font-black mb-1">Zkoušení a testy</h2>
         <p class="text-xs text-purple-400 mb-4 font-semibold">Vybráno kapitol: ${state.selectedTopics.length}</p>
 
-        <!-- VOLBA OBSÁHLOSTI ZKOUŠENÍ -->
         <div class="mb-4 bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-lg">
           <label class="block text-xs font-bold text-amber-300 uppercase mb-2">1. Vyber obsáhlost zkoušení:</label>
           <div class="grid grid-cols-3 gap-2">
@@ -492,7 +501,6 @@
             </button>
           </div>
 
-          <!-- FORMÁT PRO TEST NANEČISTO -->
           <label class="block text-xs font-bold text-purple-300 uppercase mt-4 mb-2">2. Formát testu nanečisto:</label>
           <div class="grid grid-cols-2 gap-2">
             <button onclick="setTestType('open')" id="type_open" class="py-2 px-3 rounded-xl text-xs font-bold border transition ${state.testType==='open' ? 'bg-purple-600 text-white border-purple-500 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700'}">
@@ -507,26 +515,17 @@
         <div class="grid gap-3">
           <button onclick="startFlashcards()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700 transition">
             <span class="text-3xl">🎴</span>
-            <div>
-              <h3 class="font-bold text-amber-300">Flashcards (České kartičky)</h3>
-              <p class="text-xs text-slate-400 mt-0.5">Velká sada kartiček v češtině podle zvolené obsáhlosti.</p>
-            </div>
+            <div><h3 class="font-bold text-amber-300">Flashcards (České kartičky)</h3><p class="text-xs text-slate-400 mt-0.5">Velká sada kartiček v češtině podle zvolené obsáhlosti.</p></div>
           </button>
 
           <button onclick="startPracticeTest()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700 transition">
             <span class="text-3xl">📝</span>
-            <div>
-              <h3 class="font-bold text-purple-300">Test nanečisto</h3>
-              <p class="text-xs text-slate-400 mt-0.5">Každá otázka má své vlastní pole přímo pod sebou.</p>
-            </div>
+            <div><h3 class="font-bold text-purple-300">Test nanečisto</h3><p class="text-xs text-slate-400 mt-0.5">Každá otázka má své vlastní pole přímo pod sebou.</p></div>
           </button>
 
           <button onclick="startOralExam()" class="p-4 bg-cardBg border border-slate-800 rounded-xl flex items-center gap-3 text-left hover:border-slate-700 transition">
             <span class="text-3xl">🎙️</span>
-            <div>
-              <h3 class="font-bold text-amber-400">Živý učitel (s body a procenty)</h3>
-              <p class="text-xs text-slate-400 mt-0.5">Aktivně reaguje na tvé odpovědi, hodnotí správnost a počítá body.</p>
-            </div>
+            <div><h3 class="font-bold text-amber-400">Živý učitel (s body a procenty)</h3><p class="text-xs text-slate-400 mt-0.5">Aktivně reaguje na tvé odpovědi, hodnotí správnost a počítá body.</p></div>
           </button>
         </div>
       `;
@@ -589,16 +588,16 @@
       }
     }
 
-    // --- FLASHCARDS: O DOST VÍCE KARTIČEK V ČEŠTINĚ ---
+    // --- FLASHCARDS: 100% ČEŠTINA ---
     async function startFlashcards() {
       const app = document.getElementById('app');
       const count = state.examScope === 'quick' ? 12 : state.examScope === 'deep' ? 35 : 22;
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje sadu ${count} českých kartiček...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje ${count} českých kartiček...</p></div>`;
       
       const prompt = `Z následujících poznámek vytvoř sadu přesně ${count} studijních kartiček.
-DŮLEŽITÁ PRAVIDLA:
-1. VŠECHNY otázky i odpovědi musí být ve 100% spisovné češtině!
-2. Nikdy nepoužívej hvězdičky.
+PŘÍSNÁ PRAVIDLA:
+1. VŠECHNY otázky i odpovědi musí být 100% v češtině! Je přísně zakázáno použít angličtinu.
+2. Nikdy nepoužívej hvězdičky pro formátování.
 3. Vrať VÝHRADNĚ platný JSON ve formátu:
 {"cards": [{"q": "Česká otázka?", "a": "Česká stručná a jasná odpověď."}]}
 
@@ -606,7 +605,7 @@ Látka:\n${getCombinedNotes()}`;
 
       try {
         const { text: raw } = await executeGroqChat([
-          { role: "system", content: "Jsi tvůrce studijních kartiček. Generuješ výhradně v češtině a ve formátu JSON." },
+          { role: "system", content: "Jsi tvůrce studijních kartiček. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Generuješ výhradně v češtině a ve formátu JSON." },
           { role: "user", content: prompt }
         ]);
         let parsed = parseCleanJson(raw);
@@ -644,15 +643,16 @@ Látka:\n${getCombinedNotes()}`;
       draw();
     }
 
-    // --- TEST NANEČISTO: VLASTNÍ POLE PRO KAŽDOU OTÁZKU & KROUŽKOVÁNÍ ---
+    // --- TEST NANEČISTO ---
     async function startPracticeTest() {
       const app = document.getElementById('app');
       const count = state.examScope === 'quick' ? 5 : state.examScope === 'deep' ? 15 : 10;
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Připravuji ${count} testových otázek...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Připravuji ${count} testových otázek v češtině...</p></div>`;
 
       let prompt = '';
       if (state.testType === 'multiple') {
         prompt = `Vytvoř test o přesně ${count} otázkách s výběrem z možností (kroužkovací test) k následující látce.
+PŘÍSNÝ ZÁKAZ ANGLIČTINY – VŠECHNO MUSÍ BÝT ČESKY.
 Vrať VÝHRADNĚ platný JSON v tomto formátu:
 {"questions": [
   {
@@ -660,18 +660,18 @@ Vrať VÝHRADNĚ platný JSON v tomto formátu:
     "q": "Znění otázky v češtině bez hvězdiček",
     "options": ["A) První možnost", "B) Druhá možnost", "C) Třetí možnost", "D) Čtvrtá možnost"],
     "correctIndex": 0,
-    "explanation": "Stručné vysvětlení správné odpovědi."
+    "explanation": "Stručné české vysvětlení správné odpovědi."
   }
 ]}
 Látka:\n${getCombinedNotes()}`;
       } else {
         prompt = `Vytvoř test o přesně ${count} otevřených otázkách (na vlastní slova) k následující látce.
+PŘÍSNÝ ZÁKAZ ANGLIČTINY.
 Vrať VÝHRADNĚ platný JSON v tomto formátu:
 {"questions": [
   {
     "id": 1,
-    "q": "Znění otázky v češtině bez hvězdiček",
-    "hint": "Nápověda pro případ nouze"
+    "q": "Znění otázky v češtině bez hvězdiček"
   }
 ]}
 Látka:\n${getCombinedNotes()}`;
@@ -679,7 +679,7 @@ Látka:\n${getCombinedNotes()}`;
 
       try {
         const { text: raw } = await executeGroqChat([
-          { role: "system", content: "Jsi tvůrce testů. Piš bezchybně česky, bez hvězdiček a vracej pouze validní JSON." },
+          { role: "system", content: "Jsi tvůrce testů. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Piš bezchybně česky, bez hvězdiček a vracej pouze validní JSON." },
           { role: "user", content: prompt }
         ]);
         const parsed = parseCleanJson(raw);
@@ -715,7 +715,6 @@ Látka:\n${getCombinedNotes()}`;
             </div>
           `;
         } else {
-          // Otevřené otázky – každá má své vlastní pole přímo pod sebou
           qHtml += `
             <div class="p-4 bg-cardBg rounded-2xl border border-slate-800 mb-4 shadow-lg">
               <span class="text-[11px] font-bold text-purple-400 uppercase tracking-wider block mb-1">Otázka ${idx + 1} z ${questions.length}</span>
@@ -758,7 +757,9 @@ Látka:\n${getCombinedNotes()}`;
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Opravuji test a počítám body...</p></div>`;
 
-      const prompt = `Zhodnoť následující test studenta.
+      const prompt = `Zhodnoť test studenta.
+PŘÍSNÉ PRAVIDLO: VŠECHNO HODNOCENÍ MUSÍ BÝT 100% V ČEŠTINĚ! ZÁKAZ ANGLIČTINY!
+
 OTÁZKY A ODPOVĚDI STUDENTA:
 ${JSON.stringify(studentAnswers, null, 2)}
 
@@ -767,12 +768,12 @@ ${getCombinedNotes()}
 
 POŽADOVANÁ STRUKTURA:
 1. Celková známka (1 až 5), počet bodů a procentuální úspěšnost.
-2. Zhodnocení otázku po otázce: u každé napiš, zda byla SPRÁVNĚ nebo ŠPATNĚ, a vysvětli proč.
-DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy.`;
+2. Zhodnocení otázku po otázce v češtině: u každé napiš, zda byla SPRÁVNĚ nebo ŠPATNĚ, a vysvětli proč.
+Nikdy nepoužívej hvězdičky pro nadpisy.`;
 
       try {
         const { text: evaluation } = await executeGroqChat([
-          { role: "system", content: "Jsi spravedlivý učitel opravující test. Piš čistý text bez hvězdiček." },
+          { role: "system", content: "Jsi spravedlivý učitel opravující test. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Piš čistý český text bez hvězdiček." },
           { role: "user", content: prompt }
         ]);
         nav('result', { title: 'Výsledek testu', content: evaluation });
@@ -782,32 +783,24 @@ DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy.`;
       }
     }
 
-    // --- ÚSTNÍ ZKOUŠENÍ: ŽIVÝ UČITEL, REAKCE, BODY, HINT & NEVÍM ---
+    // --- ÚSTNÍ ZKOUŠENÍ: ŽIVÝ UČITEL ---
     async function startOralExam() {
       const totalQ = state.examScope === 'quick' ? 3 : state.examScope === 'deep' ? 8 : 5;
-      state.oral = {
-        score: 0,
-        maxScore: 0,
-        qIndex: 1,
-        totalQ: totalQ,
-        currentQuestion: '',
-        history: [],
-        lastFeedback: ''
-      };
+      state.oral = { score: 0, maxScore: 0, qIndex: 1, totalQ: totalQ, currentQuestion: '', history: [] };
 
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Učitel si připravuje první otázku k tabuli...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Učitel si připravuje první otázku v češtině...</p></div>`;
 
       const prompt = `Jsi přísný ale spravedlivý zkoušející u tabule. Zkoušíš studenta ústně z látky.
 Polož studentovi první ústní otázku.
-Vrať VÝHRADNĚ JSON ve formátu:
+PŘÍSNÝ ZÁKAZ ANGLIČTINY. Vrať VÝHRADNĚ JSON ve formátu:
 {"question": "Znění první otázky k tabuli v bezchybné češtině bez hvězdiček."}
 
 Látka:\n${getCombinedNotes()}`;
 
       try {
         const { text: raw } = await executeGroqChat([
-          { role: "system", content: "Jsi ústní zkoušející. Vracíš výhradně platný JSON." },
+          { role: "system", content: "Jsi ústní zkoušející. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Vracíš výhradně platný český JSON." },
           { role: "user", content: prompt }
         ]);
         const parsed = parseCleanJson(raw);
@@ -842,7 +835,6 @@ Látka:\n${getCombinedNotes()}`;
       });
 
       app.innerHTML = `
-        <!-- STAVOVÝ ŘÁDEK ZKOUŠENÍ NAHOŘE (BODY A PROCENTA) -->
         <div class="sticky top-20 z-40 bg-slate-950/95 backdrop-blur-md p-3 rounded-2xl border border-slate-800 shadow-xl mb-4">
           <div class="flex justify-between items-center text-xs">
             <span class="font-bold text-amber-400">Otázka ${oral.qIndex} z ${oral.totalQ}</span>
@@ -855,16 +847,13 @@ Látka:\n${getCombinedNotes()}`;
           </div>
         </div>
 
-        <!-- HISTORIE PROBĚHLÝCH OTÁZEK -->
         ${historyHtml ? `<div class="max-h-60 overflow-y-auto mb-4 pr-1">${historyHtml}</div>` : ''}
 
-        <!-- AKTUÁLNÍ OTÁZKA UČITELE -->
         <div class="p-5 rounded-2xl bg-gradient-to-r from-cardBg to-slate-900 border border-amber-500/40 shadow-xl mb-4">
           <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1">👨‍🏫 Učitel u tabule se ptá:</span>
           <p class="text-base font-bold text-slate-100 leading-relaxed">${cleanAndFormatText(oral.currentQuestion)}</p>
         </div>
 
-        <!-- ODPOVĚĎ STUDENTA -->
         <div class="bg-cardBg p-4 rounded-2xl border border-slate-800 shadow-lg">
           <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tvoje odpověď učiteli:</label>
           <textarea id="oralStudentInput" rows="3" placeholder="Napiš svou odpověď svými slovy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 mb-3"></textarea>
@@ -887,19 +876,18 @@ Látka:\n${getCombinedNotes()}`;
       `;
     }
 
-    // Tlačítko Nápověda (Hint)
     async function handleOralHint() {
       const hintBox = document.getElementById('hintOutputBox');
-      hintBox.innerHTML = '<span class="text-amber-400">⏳ Učitel přemýšlí nad nápovědou...</span>';
+      hintBox.innerHTML = '<span class="text-amber-400">⏳ Učitel přemýšlí nad českou nápovědou...</span>';
       
-      const prompt = `Student je u tabule a neví si rady s touto otázkou: "${state.oral.currentQuestion}".
-Dej mu stručnou a chytrou nápovědu (hint), která ho navede, ale NEPROZRAĎ mu přímou odpověď.
-Nikdy nepoužívej hvězdičky.
+      const prompt = `Student je u tabule a neví si rady s otázkou: "${state.oral.currentQuestion}".
+Dej mu stručnou nápovědu (hint) v češtině, která ho navede, ale NEPROZRAĎ přímou odpověď.
+PŘÍSNÝ ZÁKAZ ANGLIČTINY. Nikdy nepoužívej hvězdičky.
 Látka:\n${getCombinedNotes()}`;
 
       try {
         const { text: hint } = await executeGroqChat([
-          { role: "system", content: "Jsi chápavý učitel, který dává studentovi nápovědu." },
+          { role: "system", content: "Jsi chápavý učitel. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Mluv výhradně česky." },
           { role: "user", content: prompt }
         ]);
         hintBox.innerHTML = `<div class="p-3 bg-amber-950/40 border border-amber-500/40 text-amber-200 rounded-xl leading-relaxed">💡 <b>Nápověda:</b> ${cleanAndFormatText(hint)}</div>`;
@@ -908,13 +896,11 @@ Látka:\n${getCombinedNotes()}`;
       }
     }
 
-    // Tlačítko Nevím
     async function handleOralDontKnow() {
       document.getElementById('oralStudentInput').value = 'Nevím, pane učiteli.';
       await sendOralAnswerToTeacher(true);
     }
 
-    // Odeslání odpovědi učiteli s hodnocením a body
     async function sendOralAnswerToTeacher(isDontKnow = false) {
       const input = document.getElementById('oralStudentInput');
       const ans = input?.value.trim() || (isDontKnow ? 'Nevím' : '');
@@ -922,30 +908,32 @@ Látka:\n${getCombinedNotes()}`;
 
       const oral = state.oral;
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Učitel poslouchá a vyhodnocuje tvoji odpověď...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Učitel poslouchá a vyhodnocuje tvou odpověď...</p></div>`;
 
       const isLast = oral.qIndex >= oral.totalQ;
       const prompt = `Jsi přísný, ale férový učitel zkoušející studenta u tabule z látky.
 OTÁZKA UČITELE: "${oral.currentQuestion}"
 ODPOVĚĎ STUDENTA: "${ans}"
 
+PŘÍSNÉ PRAVIDLO: VŠECHNA TVOJE SLOVA MUSÍ BÝT 100% V ČEŠTINĚ! ZÁKAZ ANGLIČTINY!
+
 ÚKOLY:
-1. PŘÍMO zareaguj na to, co student řekl. Pokud se mýlí, oprav ho a vysvětli pravdu. Pokud řekl pravdu, pochval ho.
+1. PŘÍMO v češtině zareaguj na to, co student řekl. Pokud se mýlí, oprav ho a vysvětli pravdu. Pokud řekl pravdu, pochval ho.
 2. Ohodnoť odpověď studenta body od 0 do 100 podle správnosti.
-3. ${isLast ? 'Jelikož je to poslední otázka, žádnou další nepokládej a napiš závěrečné zhodnocení zkoušení.' : 'Vymysli novou, navazující otázku k látce.'}
+3. ${isLast ? 'Jelikož je to poslední otázka, žádnou další nepokládej a napiš závěrečné zhodnocení zkoušení v češtině.' : 'Vymysli novou navazující otázku v češtině.'}
 
 Vrať VÝHRADNĚ platný JSON ve formátu:
 {
-  "feedback": "Reakce učitele na konkrétní slova studenta a vysvětlení chyby...",
+  "feedback": "Česká reakce učitele na konkrétní slova studenta a vysvětlení chyby...",
   "points": 80,
-  "nextQuestion": "${isLast ? '' : 'Znění další otázky bez hvězdiček...'}"
+  "nextQuestion": "${isLast ? '' : 'Znění další otázky v češtině bez hvězdiček...'}"
 }
 
 Látka:\n${getCombinedNotes()}`;
 
       try {
         const { text: raw } = await executeGroqChat([
-          { role: "system", content: "Jsi zkoušející učitel. Vracíš výhradně validní JSON bez hvězdiček." },
+          { role: "system", content: "Jsi zkoušející učitel. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Vracíš výhradně validní český JSON bez hvězdiček." },
           { role: "user", content: prompt }
         ]);
         const res = parseCleanJson(raw);
@@ -961,7 +949,6 @@ Látka:\n${getCombinedNotes()}`;
         });
 
         if (isLast) {
-          // Konec zkoušení – závěrečné vysvědčení
           const finalPercent = Math.round((oral.score / oral.maxScore) * 100);
           let grade = finalPercent >= 88 ? 1 : finalPercent >= 75 ? 2 : finalPercent >= 60 ? 3 : finalPercent >= 45 ? 4 : 5;
           
@@ -1003,11 +990,11 @@ Látka:\n${getCombinedNotes()}`;
       const input = document.getElementById('chatInput');
       const val = input?.value.trim();
       if (!val) return;
-      state.chatHistory.push({ role: 'user', content: val });
+      state.chatHistory.push({ role: 'user', text: val });
       renderChatView();
       try {
         const { text: reply } = await executeGroqChat([
-          { role: "system", content: `Jsi trpělivý osobní lektor. Odpovídej věcně a bez zbytečných hvězdiček k této látce:\n${getCombinedNotes()}` },
+          { role: "system", content: `Jsi trpělivý osobní lektor. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Odpovídej výhradně česky a bez hvězdiček k této látce:\n${getCombinedNotes()}` },
           ...state.chatHistory
         ]);
         state.chatHistory.push({ role: 'assistant', content: reply });
@@ -1015,7 +1002,7 @@ Látka:\n${getCombinedNotes()}`;
       } catch(e) { alert(e.message); }
     }
 
-    // --- VÝSLEDEK S MOŽNOSTÍ ÚPRAVY ---
+    // --- VÝSLEDEK S ÚPRAVOU NA PŘÁNÍ (100% ČESKY) ---
     function renderOutputView({ title, content }) {
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
@@ -1028,7 +1015,7 @@ Látka:\n${getCombinedNotes()}`;
         <div class="mt-4 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
           <label class="block text-xs font-bold text-amber-300 uppercase mb-1.5">✏️ Chceš na tomto výsledku něco změnit?</label>
           <div class="flex gap-2">
-            <input id="refineInput" type="text" placeholder="např. zkrať to / přidej víc k tématu X / udělej to formou testu..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
+            <input id="refineInput" type="text" placeholder="např. zkrať to / vysvětli víc bod 2 / přidej další příklad..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 text-xs text-slate-100" onkeydown="if(event.key==='Enter') refineCurrentResult('${title}')">
             <button onclick="refineCurrentResult('${title}')" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 font-bold rounded-xl text-xs active:scale-95 transition">
               ⚡ Upravit
             </button>
@@ -1045,12 +1032,12 @@ Látka:\n${getCombinedNotes()}`;
       if (!userInstruction) return;
 
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Přepracovávám podle tvého přání...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Přepracovávám v češtině podle tvého přání...</p></div>`;
 
       try {
         const { text: newResponse } = await executeGroqChat([
-          { role: "system", content: "Uprav předchozí výstup přesně podle nového přání studenta. Nepoužívej hvězdičky pro nadpisy." },
-          { role: "user", content: `Původní látka:\n${getCombinedNotes()}\n\nNové přání studenta: ${userInstruction}` }
+          { role: "system", content: "Jsi český pedagog. STRIKTNÍ PRAVIDLO: Odpovídej VÝHRADNĚ a POUZE v češtině. Je přísně zakázáno použít angličtinu. Nikdy nepoužívej hvězdičky pro nadpisy. Můžeš zachovat rámečky [EXTRA:] a [TIP NA PAMĚŤ:]." },
+          { role: "user", content: `Původní látka:\n${getCombinedNotes()}\n\nNové přání studenta k úpravě (POVINNĚ CELÉ V ČEŠTINĚ): ${userInstruction}` }
         ]);
         renderOutputView({ title: title + ' (Upraveno)', content: newResponse });
       } catch(e) {
@@ -1063,24 +1050,24 @@ Látka:\n${getCombinedNotes()}`;
     async function runAiStudy(type) {
       const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály...</p></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály v češtině...</p></div>`;
       
-      let sys = "Jsi špičkový osobní lektor. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
+      let sys = "Jsi špičkový osobní lektor. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Mluv výhradně česky. Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
       let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
 
       if (type === 'detailni') {
-        prompt += `VYTVOŘ MAXIMÁLNĚ DETAILNÍ A HLOUBKOVÝ VÝKLAD LÁTKY. Nevynechej žádný fakt ani souvislost.
+        prompt += `VYTVOŘ MAXIMÁLNĚ DETAILNÍ A HLOUBKOVÝ VÝKLAD LÁTKY V ČEŠTINĚ. Nevynechej žádný fakt ani souvislost.
 POVINNÁ STRUKTURA:
 1. Podrobné rozpracování látky.
 2. V textu pravidelně vytvářej tyto dva typy rámečků přesně v těchto závorkách:
-   [EXTRA: Dodatečné zajímavé informace, hlubší vědecký/historický kontext a souvislosti, které pomohou látku pochopit.]
-   [TIP NA PAMĚŤ: Konkrétní mnemotechnická pomůcka, asociace nebo myšlenkový trik, jak si tento pojem, letopočet nebo vzorec natrvalo zapamatovat.]`;
+   [EXTRA: Dodatečné zajímavé informace, hlubší vědecký/historický kontext a souvislosti v češtině.]
+   [TIP NA PAMĚŤ: Konkrétní česká mnemotechnická pomůcka, asociace nebo myšlenkový trik na zapamatování.]`;
       } else if (type === 'shrnuti') {
-        prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
+        prompt += "Vytvoř jasné shrnutí této látky v českých odrážkách bez zbytečné omáčky.";
       } else if (type === 'eli5') {
-        prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných přirovnání.";
+        prompt += "Vysvětli tuto látku jako pro hlupáka (ELI5) pomocí vtipných českých přirovnání.";
       } else if (type === 'predzvonici') {
-        prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější pojmy a definice.";
+        prompt += "UDĚLEJ RYCHLOKURZ 3 MINUTY PŘED TESTEM. Vypiš jen nejdůležitější české pojmy a definice.";
       }
 
       if (customNote) prompt += `\n\nDodatečné přání studenta: ${customNote}`;
@@ -1189,7 +1176,7 @@ POVINNÁ STRUKTURA:
         if (btn) btn.innerText = `⚡ Tvořím kapitoly: Část ${i + 1} z ${chunks.length}...`;
         
         const messages = [
-          { role: "system", content: "Rozděl zadaný text sešitu do logických HLAVNÍCH KAPITOL a PODTÉMAT. Vrať VÝHRADNĚ platný JSON ve formátu: {\"chapters\": [{\"chapter\": \"Název hlavní kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"text poznámek...\"}]}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
+          { role: "system", content: "Rozděl zadaný text sešitu do logických HLAVNÍCH KAPITOL a PODTÉMAT. PŘÍSNÝ ZÁKAZ ANGLIČTINY. Vrať VÝHRADNĚ platný JSON ve formátu: {\"chapters\": [{\"chapter\": \"Název hlavní kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"text poznámek...\"}]}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
           { role: "user", content: `Předmět: ${subName}\nČást ${i + 1}/${chunks.length}:\n\n${chunks[i]}` }
         ];
 
@@ -1267,7 +1254,7 @@ POVINNÁ STRUKTURA:
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><h2 class="text-xl font-bold mb-1">Zpracovávám a čtu ${count} fotek...</h2></div>`;
 
       try {
-        const userContents = [{ type: "text", text: `Předmět: ${subName}. Přečti sešit, najdi hlavní kapitoly a podtémata. Vrať JSON: {\"chapters\": [{\"chapter\": \"Název kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"obsah...\"}]}]}` }];
+        const userContents = [{ type: "text", text: `Předmět: ${subName}. Přečti sešit, najdi hlavní kapitoly a podtémata v češtině. Vrať JSON: {\"chapters\": [{\"chapter\": \"Název kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"obsah...\"}]}]}` }];
         
         for (let i = 0; i < input.files.length; i++) {
           const compressedDataUrl = await compressImageFile(input.files[i]);
@@ -1345,7 +1332,7 @@ POVINNÁ STRUKTURA:
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">StudyApp v26.0</p>
+        <p class="text-xs text-slate-400 mb-4">StudyApp v27.0 CzechPure</p>
 
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
           <label class="block text-xs font-bold text-slate-400 uppercase">GitHub Cloud Token (Synchronizace)</label>
