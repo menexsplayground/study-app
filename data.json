@@ -209,5 +209,35 @@
         "content": "potlačování boje za černošská občanská práva v USA; Duben – demonstrace v Birminghamu (Alabama); Martin Luther King – taktika nenásilí; Tvrdé zákroky v živém TV přenosu – psi, slzný plyn, elektrické obušky na dobytek a také hasičské stříkačky"
       }
     ]
+  },
+  {
+    "id": "sub_1795350935790",
+    "name": "Zeměpis",
+    "topics": [
+      {
+        "id": "top_1795350935790_4o33",
+        "chapter": "Čas",
+        "title": "Poledník a místní čas",
+        "content": "Polevník je čára, která spojuje oba zemské póly a má tvar polokružnice. Na každém polevníku nastává poledne ve stejný okamžik. V důsledku toho každý polevník má svůj vlastní místní čas."
+      },
+      {
+        "id": "top_1795350935790_ukab",
+        "chapter": "Čas",
+        "title": "Časová pásma",
+        "content": "Pro zjednodušení je mít Zemi rozdělenou na časová pásma, která se navracejí po jedné hodině po 15 stupních. Na nulém polevníku (0°) je tzv. světový čas. Polevníky (0, 15, 30... až 180) procházejí vždy středem daného časového pásma. Časové pásmo je tedy vždy rozšířeno o 7,5° na východ od daného polevníku a 7,5° na západ."
+      },
+      {
+        "id": "top_1795350935790_dz0b",
+        "chapter": "Čas",
+        "title": "Datová hranice",
+        "content": "Datová hranice probíhá zhruba po 180. polevníku, což je stanovená hranice, na které se mění datum. Při přechodu západně-východě (VP→ZP) získáváme jeden den navíc, zatímco při přechodu východně-západě (ZP→VP) tento den ztrácíme."
+      },
+      {
+        "id": "top_1795350935790_t6kz",
+        "chapter": "Čas",
+        "title": "Výpočet místního času",
+        "content": "Výpočet vychází z předpokladu, že jedna hodina odpovídá 15° zeměpisné délky. Jeden stupeň (čepový) odpovídá za 4 minuty času. Teprve směrem na východ se čas přičítá, resp. na západ se odečítá."
+      }
+    ]
   }
 ]
