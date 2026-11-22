@@ -239,5 +239,155 @@
         "content": "Výpočet vychází z předpokladu, že jedna hodina odpovídá 15° zeměpisné délky. Jeden stupeň (čepový) odpovídá za 4 minuty času. Teprve směrem na východ se čas přičítá, resp. na západ se odečítá."
       }
     ]
+  },
+  {
+    "id": "sub_1795351227211",
+    "name": "Biologie",
+    "topics": [
+      {
+        "id": "top_1795351227211_q3q4",
+        "chapter": "Viruses – General Characteristics",
+        "title": "Definition and Position in Nature",
+        "content": "Viruses stand at the border between living and non‑living matter. They are considered the most primitive form of life but do not fulfill all basic properties of living organisms."
+      },
+      {
+        "id": "top_1795351227211_9uls",
+        "chapter": "Viruses – General Characteristics",
+        "title": "Metabolism and Reproduction",
+        "content": "Viruses lack metabolism and cannot reproduce on their own. They become metabolically active only as intracellular parasites, obtaining the necessary machinery from the host cell."
+      },
+      {
+        "id": "top_1795351227211_ss60",
+        "chapter": "Viruses – General Characteristics",
+        "title": "Parasitism",
+        "content": "The virus‑host relationship is parasitic: advantageous for the virus, detrimental for the host. Viruses are sub‑cellular particles (non‑cellular) and therefore are sometimes called sub‑cellular life forms."
+      },
+      {
+        "id": "top_1795351227211_6msy",
+        "chapter": "Viral Structure",
+        "title": "Virion Components",
+        "content": "A virion consists of a protein capsid that protects the genetic material (RNA or DNA). Some viruses contain only RNA and lack DNA entirely. The basic genetic unit is a gene (simple program)."
+      },
+      {
+        "id": "top_1795351227211_q8u0",
+        "chapter": "Viral Structure",
+        "title": "Capsid and Tail (Bičík)",
+        "content": "The capsid is a protein shell that can keep a virus viable on surfaces for up to 17 hours outside a host. Some viruses possess a tail (bičík) that may inject the genome into the host cell; the tail is optional."
+      },
+      {
+        "id": "top_1795351227211_mpxc",
+        "chapter": "Viral Structure",
+        "title": "Envelope (Membrane)",
+        "content": "Certain viruses acquire a lipid envelope (membrane) during budding from the host cell, which can aid in entry and immune evasion."
+      },
+      {
+        "id": "top_1795351227212_x7d4",
+        "chapter": "Viral Replication Cycles",
+        "title": "Lytic (Lyse) Cycle",
+        "content": "1. Attachment to a specific cellular receptor. 2. Entry – either tail injection of nucleic acid or endocytosis of the whole virion. 3. Uncoating and transport of viral DNA/RNA to the nucleus (DNA viruses) or ribosomes (RNA viruses). 4. Hijacking host transcription/translation to produce viral proteins and genomes. 5. Assembly of new virions. 6. Release by cell lysis or budding."
+      },
+      {
+        "id": "top_1795351227212_fcnw",
+        "chapter": "Viral Replication Cycles",
+        "title": "RNA Virus Replication",
+        "content": "RNA viruses bypass the nuclear entry step. Their RNA is directly translated by ribosomes to produce viral proteins, including capsid proteins and new RNA genomes. Advantage: no need to breach the nuclear membrane."
+      },
+      {
+        "id": "top_1795351227212_ndy6",
+        "chapter": "Viral Replication Cycles",
+        "title": "Retroviruses",
+        "content": "Retroviruses carry RNA genomes that are reverse‑transcribed into DNA by reverse transcriptase. The resulting DNA integrates into the host genome. Reverse transcription is error‑prone, giving retroviruses a high mutation rate (e.g., HIV)."
+      },
+      {
+        "id": "top_1795351227212_mxmp",
+        "chapter": "Viral Replication Cycles",
+        "title": "Lysogenic (Lyzogenic) Cycle",
+        "content": "Initial steps mirror the lytic cycle, but the viral genome integrates into the host chromosome and replicates passively with host cell division. Under certain triggers the prophage is induced, entering the lytic phase. Lysogeny can promote uncontrolled host cell division, sometimes leading to cancer (e.g., HPV → cervical cancer, papillomavirus → warts)."
+      },
+      {
+        "id": "top_1795351227212_nzru",
+        "chapter": "Overview of Viral Diseases and Prevention",
+        "title": "Therapy and Vaccination",
+        "content": "Most viral infections are treated symptomatically; specific antivirals exist for only a few viruses. Vaccination (active immunization) is the most effective preventive measure. Passive immunization provides pre‑formed antibodies."
+      },
+      {
+        "id": "top_1795351227212_esyd",
+        "chapter": "Overview of Viral Diseases and Prevention",
+        "title": "General Epidemiology",
+        "content": "Many viral diseases are highly contagious, especially in children. Some viruses (e.g., measles) have extremely high transmission rates."
+      },
+      {
+        "id": "top_1795351227212_7g1d",
+        "chapter": "Specific Viral Diseases",
+        "title": "Childhood Exanthematous Diseases",
+        "content": "Common childhood viral illnesses include varicella (chickenpox), measles, rubella, and mumps. Typical course: fever followed by characteristic rash. Vaccination has eliminated most cases of measles, rubella and mumps; varicella remains common but is vaccine‑preventable."
+      },
+      {
+        "id": "top_1795351227212_xuh4",
+        "chapter": "Specific Viral Diseases",
+        "title": "Poliomyelitis (Dětská obrna)",
+        "content": "Eradicated in the Czech Republic. The virus attacks the spinal cord, potentially causing paralysis and death."
+      },
+      {
+        "id": "top_1795351227212_5715",
+        "chapter": "Specific Viral Diseases",
+        "title": "Influenza",
+        "content": "Targets respiratory epithelium, causing high fever, mucus production, and cough. Can be fatal; historic pandemics such as the 1918 Spanish flu caused tens of millions of deaths. Seasonal flu is usually milder; other respiratory viruses (adenoviruses, rhinoviruses, coronaviruses) cause similar but less severe symptoms."
+      },
+      {
+        "id": "top_1795351227212_0sz7",
+        "chapter": "Specific Viral Diseases",
+        "title": "Tropical Viral Diseases",
+        "content": "Ebola (hemorrhagic fever, high mortality, African outbreaks). Dengue, yellow fever, chikungunya and Zika are mosquito‑borne; dengue and Zika can cause severe complications, while yellow fever is vaccine‑preventable."
+      },
+      {
+        "id": "top_1795351227212_92kc",
+        "chapter": "Specific Viral Diseases",
+        "title": "Rabies (Vzteklina)",
+        "content": "Transmitted by bites of carnivores (dogs, bats). Long incubation period, fatal once symptoms appear. Post‑exposure prophylaxis with vaccine is essential."
+      },
+      {
+        "id": "top_1795351227212_k0ak",
+        "chapter": "Specific Viral Diseases",
+        "title": "Shingles (Pásový opar)",
+        "content": "Reactivation of varicella‑zoster virus in sensory ganglia, producing painful vesicular rash along a dermatome. Can persist for life, especially in immunocompromised individuals."
+      },
+      {
+        "id": "top_1795351227212_pvd4",
+        "chapter": "Specific Viral Diseases",
+        "title": "Hepatitis (A–F)",
+        "content": "Inflammation of the liver. Hepatitis A – fecal‑oral transmission, usually mild, vaccine available. Hepatitis B – blood/sexual transmission, chronic infection can lead to cirrhosis and cancer; vaccine available. Hepatitis C, D, E, F – various transmission routes (blood, sexual, drug use); chronic forms may cause liver cancer. Treatment varies; vaccines exist for A and B."
+      },
+      {
+        "id": "top_1795351227212_cxiu",
+        "chapter": "Specific Viral Diseases",
+        "title": "Infectious Mononucleosis",
+        "content": "Caused by Epstein‑Barr virus; attacks immune system and liver. Often asymptomatic or presents with fever, sore throat, and lymphadenopathy."
+      },
+      {
+        "id": "top_1795351227212_zvex",
+        "chapter": "Specific Viral Diseases",
+        "title": "HIV/AIDS",
+        "content": "Human immunodeficiency virus destroys CD4⁺ T‑lymphocytes, leading to immune collapse. Transmission: blood, sexual contact, mother‑to‑child. Antiretroviral therapy controls viral replication but does not cure infection. High mutation rate; vaccine still unavailable."
+      },
+      {
+        "id": "top_1795351227212_ucwb",
+        "chapter": "Non‑Viral Infectious Agents",
+        "title": "Viroids",
+        "content": "Simplest infectious agents; consist only of short circular RNA without a protein capsid. Cause diseases in plants (e.g., potato spindle tuber)."
+      },
+      {
+        "id": "top_1795351227212_95bs",
+        "chapter": "Non‑Viral Infectious Agents",
+        "title": "Prions",
+        "content": "Misfolded proteins that can induce abnormal folding of normal proteins. Cause transmissible spongiform encephalopathies such as Creutzfeldt‑Jakob disease in humans and bovine spongiform encephalopathy in cattle. Long incubation (≈20 years)."
+      },
+      {
+        "id": "top_1795351227212_sf5f",
+        "chapter": "Prokaryotes – Bacterial Cell Basics",
+        "title": "Cellular Structures",
+        "content": "Typical bacterial cell features a cell wall, fimbriae (surface appendages for adhesion), and ribosomes for protein synthesis."
+      }
+    ]
   }
 ]
