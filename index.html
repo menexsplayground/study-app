@@ -14,77 +14,83 @@
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { darkBg: '#050811', cardBg: '#0d1527' } } } }
   </script>
+  <style>
+    /* Ochrana proti překrytí časem a baterií na iOS */
+    .safe-top {
+      padding-top: max(2.75rem, env(safe-area-inset-top, 2.75rem));
+    }
+  </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
-  <!-- ZÁHLAVÍ S REALISTICKÝM DALÍHO SLONEM -->
-  <header class="p-3 pt-6 md:pt-4 border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
+  <!-- HORNÍ MENU: POSUNUTÉ POD ČAS A BATERII -->
+  <header class="p-3 safe-top border-b border-slate-800/80 flex justify-between items-center bg-darkBg/95 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <button onclick="nav('home')" class="flex items-center gap-2.5 group">
-        <!-- DETAILNÍ ANATOMICKÝ DALÍHO SLON -->
-        <svg class="w-10 h-14 text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.5)] transition-transform group-hover:scale-105" viewBox="0 0 120 160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-          <!-- Zlaté stínování a gradienty -->
+      <button onclick="nav('home')" class="flex items-center gap-2 group">
+        <!-- VYSOCE DETAILNÍ DALÍHO SLON BEZ OBELISKU -->
+        <svg class="w-11 h-16 text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)] transition-transform group-hover:scale-105" viewBox="0 0 120 170" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <defs>
-            <linearGradient id="daliGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="daliGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#fef08a"/>
-              <stop offset="50%" stop-color="#f59e0b"/>
+              <stop offset="45%" stop-color="#f59e0b"/>
               <stop offset="100%" stop-color="#b45309"/>
             </linearGradient>
           </defs>
           
           <!-- Hřbetní sedlová drapérie -->
-          <path d="M42,32 C52,28 72,28 82,33 C84,39 82,46 78,50 L46,50 C42,46 40,39 42,32 Z" fill="url(#daliGold)" fill-opacity="0.25" stroke="url(#daliGold)" stroke-width="1.8"/>
-          <line x1="44" y1="50" x2="80" y2="50" stroke="url(#daliGold)" stroke-width="2"/>
-          <path d="M48,50 Q62,55 76,50" stroke="url(#daliGold)" stroke-width="1.5" stroke-dasharray="2 2"/>
+          <path d="M40,30 C52,25 74,25 86,31 C88,38 86,47 80,51 L44,51 C39,47 38,38 40,30 Z" fill="url(#daliGoldGrad)" fill-opacity="0.25" stroke="url(#daliGoldGrad)" stroke-width="1.8"/>
+          <line x1="42" y1="51" x2="84" y2="51" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <path d="M46,51 Q63,56 80,51" stroke="url(#daliGoldGrad)" stroke-width="1.5" stroke-dasharray="2 2"/>
 
-          <!-- Mohutné anatomické tělo slona -->
-          <path d="M38,38 C30,40 24,47 24,56 C24,65 32,71 44,72 L80,72 C92,71 100,64 100,54 C100,44 92,36 80,35 C72,34 50,34 38,38 Z" fill="url(#daliGold)" fill-opacity="0.35" stroke="url(#daliGold)" stroke-width="2.2"/>
-          <!-- Svalové vrásky na břiše a bocích -->
-          <path d="M50,68 Q58,62 66,68" stroke="url(#daliGold)" stroke-width="1.2" stroke-opacity="0.7"/>
-          <path d="M72,67 Q78,63 84,67" stroke="url(#daliGold)" stroke-width="1.2" stroke-opacity="0.7"/>
+          <!-- Mohutné anatomické tělo slona s klenbou -->
+          <path d="M36,36 C27,38 22,46 22,56 C22,66 31,73 44,74 L84,74 C96,73 104,65 104,54 C104,43 95,34 82,33 C72,32 48,32 36,36 Z" fill="url(#daliGoldGrad)" fill-opacity="0.3" stroke="url(#daliGoldGrad)" stroke-width="2.4"/>
+          
+          <!-- Vrásky na břiše a bocích -->
+          <path d="M48,70 Q58,63 68,70" stroke="url(#daliGoldGrad)" stroke-width="1.3" stroke-opacity="0.75"/>
+          <path d="M74,69 Q82,64 90,69" stroke="url(#daliGoldGrad)" stroke-width="1.3" stroke-opacity="0.75"/>
 
-          <!-- Hlava slona, temenní hrbol a oko -->
-          <path d="M36,44 C30,41 24,46 22,54 C21,58 24,62 28,63" stroke="url(#daliGold)" stroke-width="2"/>
-          <circle cx="27" cy="50" r="1.2" fill="#fff" stroke="none"/>
+          <!-- Hlava, temeno a oko -->
+          <path d="M34,42 C28,39 22,44 20,53 C19,57 22,62 27,64" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <circle cx="26" cy="49" r="1.3" fill="#fff" stroke="none"/>
+          <path d="M23,47 Q26,45 29,48" stroke="url(#daliGoldGrad)" stroke-width="1" stroke-opacity="0.8"/>
 
-          <!-- Realistické sloní ucho s chrupavkami -->
-          <path d="M38,40 C34,42 32,50 34,58 C36,64 42,65 44,60 C46,54 44,44 38,40 Z" fill="url(#daliGold)" fill-opacity="0.4" stroke="url(#daliGold)" stroke-width="1.8"/>
-          <path d="M36,48 Q39,53 37,58" stroke="url(#daliGold)" stroke-width="1" stroke-opacity="0.6"/>
+          <!-- Detailní ucho s chrupavkami -->
+          <path d="M37,38 C32,41 30,50 32,59 C34,66 41,67 43,62 C45,55 44,43 37,38 Z" fill="url(#daliGoldGrad)" fill-opacity="0.45" stroke="url(#daliGoldGrad)" stroke-width="2"/>
+          <path d="M35,46 Q38,53 36,60" stroke="url(#daliGoldGrad)" stroke-width="1.2" stroke-opacity="0.6"/>
 
-          <!-- Živý prohnutý chobot směřující vzhůru -->
-          <path d="M22,54 C17,62 14,72 10,76 C7,78 4,75 7,71 C11,64 15,53 19,42 C22,35 27,31 34,34" stroke="url(#daliGold)" stroke-width="2.4"/>
-          <!-- Rýhy na chobotu -->
-          <line x1="16" y1="56" x2="19" y2="58" stroke="url(#daliGold)" stroke-width="1.2"/>
-          <line x1="13" y1="63" x2="16" y2="65" stroke="url(#daliGold)" stroke-width="1.2"/>
-          <line x1="10" y1="70" x2="13" y2="72" stroke="url(#daliGold)" stroke-width="1.2"/>
+          <!-- Živý prohnutý chobot -->
+          <path d="M20,53 C15,62 12,74 8,78 C5,80 2,77 5,72 C9,64 14,52 18,39 C21,32 26,27 34,31" stroke="url(#daliGoldGrad)" stroke-width="2.5"/>
+          <line x1="14" y1="56" x2="18" y2="58" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
+          <line x1="11" y1="64" x2="15" y2="66" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
+          <line x1="8" y1="72" x2="12" y2="74" stroke="url(#daliGoldGrad)" stroke-width="1.3"/>
 
-          <!-- Velký zahnutý slonovinový kel -->
-          <path d="M26,60 C18,65 10,63 5,56 C4,55 6,54 8,56 C14,60 20,59 25,56" fill="#fff" fill-opacity="0.8" stroke="rgb(254 243 199)" stroke-width="2"/>
+          <!-- Zakřivený kel -->
+          <path d="M24,61 C16,67 7,65 2,57 C1,56 3,55 5,57 C12,62 18,61 23,57" fill="#fff" fill-opacity="0.85" stroke="rgb(254 243 199)" stroke-width="2.2"/>
 
-          <!-- Ocas se střapcem -->
-          <path d="M98,55 C103,62 102,70 103,76" stroke="url(#daliGold)" stroke-width="1.5"/>
-          <path d="M102,75 L104,79 L101,78 Z" fill="url(#daliGold)"/>
+          <!-- Ocas -->
+          <path d="M102,56 C107,64 106,72 107,79" stroke="url(#daliGoldGrad)" stroke-width="1.6"/>
+          <path d="M106,78 L108,83 L104,82 Z" fill="url(#daliGoldGrad)"/>
 
-          <!-- IKONICKÉ ULTRA DLOUHÉ DALÍHO STILT NOHY S KLOUBY -->
+          <!-- ULTRA DLOUHÉ PAVOUČÍ NOHY S ANATOMICKÝMI KLOUBY -->
           <!-- Přední noha 1 -->
-          <path d="M36,72 L31,102 L24,152" stroke="url(#daliGold)" stroke-width="2"/>
-          <circle cx="31" cy="102" r="2.2" fill="url(#daliGold)"/>
-          <circle cx="27" cy="128" r="1.6" fill="url(#daliGold)"/>
+          <path d="M34,74 L29,108 L21,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <circle cx="29" cy="108" r="2.4" fill="url(#daliGoldGrad)"/>
+          <circle cx="25" cy="138" r="1.8" fill="url(#daliGoldGrad)"/>
 
           <!-- Přední noha 2 -->
-          <path d="M46,72 L42,105 L37,152" stroke="url(#daliGold)" stroke-width="2"/>
-          <circle cx="42" cy="105" r="2.2" fill="url(#daliGold)"/>
-          <circle cx="39" cy="130" r="1.6" fill="url(#daliGold)"/>
+          <path d="M44,74 L40,112 L34,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <circle cx="40" cy="112" r="2.4" fill="url(#daliGoldGrad)"/>
+          <circle cx="37" cy="140" r="1.8" fill="url(#daliGoldGrad)"/>
 
           <!-- Zadní noha 1 -->
-          <path d="M76,72 L80,103 L85,152" stroke="url(#daliGold)" stroke-width="2"/>
-          <circle cx="80" cy="103" r="2.2" fill="url(#daliGold)"/>
-          <circle cx="83" cy="129" r="1.6" fill="url(#daliGold)"/>
+          <path d="M80,74 L84,110 L90,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <circle cx="84" cy="110" r="2.4" fill="url(#daliGoldGrad)"/>
+          <circle cx="87" cy="139" r="1.8" fill="url(#daliGoldGrad)"/>
 
           <!-- Zadní noha 2 -->
-          <path d="M88,72 L92,106 L98,152" stroke="url(#daliGold)" stroke-width="2"/>
-          <circle cx="92" cy="106" r="2.2" fill="url(#daliGold)"/>
-          <circle cx="95" cy="131" r="1.6" fill="url(#daliGold)"/>
+          <path d="M92,74 L97,114 L104,164" stroke="url(#daliGoldGrad)" stroke-width="2.2"/>
+          <circle cx="97" cy="114" r="2.4" fill="url(#daliGoldGrad)"/>
+          <circle cx="100" cy="141" r="1.8" fill="url(#daliGoldGrad)"/>
         </svg>
 
         <span class="text-xl font-black bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent">
@@ -109,82 +115,66 @@
 
     let cachedActiveGroqModel = null;
 
-    // --- GENEROVÁNÍ REALISTICKÉ IKONY NA PLOCHU PRO IPAD/IPHONE ---
+    // --- GENEROVÁNÍ ČISTÉ IKONY NA PLOCHU BEZ ORANŽOVÉHO RÁMEČKU ---
     function setupAppleHomeScreenIcon() {
       try {
         const c = document.createElement('canvas');
         c.width = 180; c.height = 180;
         const ctx = c.getContext('2d');
         
-        // Hluboké kosmické pozadí
-        const grad = ctx.createRadialGradient(90, 80, 10, 90, 90, 115);
-        grad.addColorStop(0, '#1a2234');
-        grad.addColorStop(1, '#03060d');
-        ctx.fillStyle = grad;
+        // Hluboké černé pozadí bez jakéhokoliv ohraničení
+        ctx.fillStyle = '#060911';
         ctx.fillRect(0, 0, 180, 180);
-        
-        // Zlaté lemování
-        ctx.strokeStyle = '#d97706';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(6, 6, 168, 168);
 
         // Zlatý realistický slon
         ctx.strokeStyle = '#fbbf24';
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
         ctx.lineWidth = 3.2;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
         ctx.save();
-        ctx.translate(35, 8);
-        ctx.scale(0.9, 0.9);
+        ctx.translate(35, 6);
+        ctx.scale(0.85, 0.85);
         
-        // Tělo
         ctx.beginPath();
-        ctx.moveTo(38, 38); ctx.bezierCurveTo(30, 40, 24, 47, 24, 56);
-        ctx.bezierCurveTo(24, 65, 32, 71, 44, 72); ctx.lineTo(80, 72);
-        ctx.bezierCurveTo(92, 71, 100, 64, 100, 54); ctx.bezierCurveTo(100, 44, 92, 36, 80, 35); ctx.closePath();
+        ctx.moveTo(36, 36); ctx.bezierCurveTo(27, 38, 22, 46, 22, 56);
+        ctx.bezierCurveTo(22, 66, 31, 73, 44, 74); ctx.lineTo(84, 74);
+        ctx.bezierCurveTo(96, 73, 104, 65, 104, 54); ctx.bezierCurveTo(104, 43, 95, 34, 82, 33); ctx.closePath();
         ctx.fill(); ctx.stroke();
         
-        // Ucho
         ctx.beginPath();
-        ctx.moveTo(38, 40); ctx.bezierCurveTo(34, 42, 32, 50, 34, 58);
-        ctx.bezierCurveTo(36, 64, 42, 65, 44, 60); ctx.closePath();
+        ctx.moveTo(37, 38); ctx.bezierCurveTo(32, 41, 30, 50, 32, 59);
+        ctx.bezierCurveTo(34, 66, 41, 67, 43, 62); ctx.closePath();
         ctx.fill(); ctx.stroke();
         
-        // Chobot
         ctx.beginPath();
-        ctx.moveTo(22, 54); ctx.bezierCurveTo(17, 62, 14, 72, 10, 76);
-        ctx.bezierCurveTo(7, 78, 4, 75, 7, 71); ctx.bezierCurveTo(11, 64, 15, 53, 19, 42);
+        ctx.moveTo(20, 53); ctx.bezierCurveTo(15, 62, 12, 74, 8, 78);
+        ctx.bezierCurveTo(5, 80, 2, 77, 5, 72); ctx.bezierCurveTo(9, 64, 14, 52, 18, 39);
         ctx.stroke();
 
-        // Kel
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.moveTo(26, 60); ctx.bezierCurveTo(18, 65, 10, 63, 5, 56); ctx.stroke();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(24, 61); ctx.bezierCurveTo(16, 67, 7, 65, 2, 57); ctx.stroke();
 
-        // Nohy
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2.6;
-        ctx.beginPath(); ctx.moveTo(36, 72); ctx.lineTo(31, 105); ctx.lineTo(24, 165); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(46, 72); ctx.lineTo(42, 108); ctx.lineTo(37, 165); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(76, 72); ctx.lineTo(80, 106); ctx.lineTo(85, 165); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(88, 72); ctx.lineTo(92, 109); ctx.lineTo(98, 165); ctx.stroke();
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2.8;
+        ctx.beginPath(); ctx.moveTo(34, 74); ctx.lineTo(29, 110); ctx.lineTo(21, 175); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(44, 74); ctx.lineTo(40, 114); ctx.lineTo(34, 175); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(80, 74); ctx.lineTo(84, 112); ctx.lineTo(90, 175); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(92, 74); ctx.lineTo(97, 116); ctx.lineTo(104, 175); ctx.stroke();
 
         ctx.restore();
         document.getElementById('appleTouchIcon').href = c.toDataURL('image/png');
       } catch(e) {}
     }
 
-    // --- ČISTIČ TEXTU A FORMÁTOVAČ RÁMEČKŮ (BEZ HVĚZDIČEK) ---
+    // --- FORMÁTOVAČ TEXTU: ČISTÉ RÁMEČKY A ŽÁDNÉ HVĚZDIČKY ---
     function cleanAndFormatText(text) {
       if (!text) return '';
       let s = String(text);
 
-      // 1. PŘEVOD RÁMEČKŮ PRO DETAILNÍ UČENÍ (EXTRA INFORMACE A TIPY NA PAMĚŤ)
       s = s.replace(/\[(?:EXTRA|DODATEČNÉ INFORMACE|ZAJÍMAVOST|SOUVISLOSTI?):\s*([\s\S]*?)\]/gi,
         '<div class="my-4 p-4 rounded-2xl bg-blue-950/40 border border-blue-500/50 text-blue-200 text-xs leading-relaxed shadow-lg">' +
-        '<div class="font-bold text-blue-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🔍</span> Dodatečné informace & Hlubší souvislosti</div>$1</div>'
+        '<div class="font-bold text-blue-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🔍</span> Dodatečné informace & Souvislosti</div>$1</div>'
       );
 
       s = s.replace(/\[(?:TIP NA PAMĚŤ|MNEMOTECHNIKA|PAMĚŤ|TIP|JAK SI ZAPAMATOVAT):\s*([\s\S]*?)\]/gi,
@@ -192,20 +182,13 @@
         '<div class="font-bold text-amber-300 flex items-center gap-2 mb-1.5 text-xs uppercase tracking-wider"><span>🧠</span> Mnemotechnická pomůcka & Jak si to zapamatovat</div>$1</div>'
       );
 
-      // 2. FORMÁTOVÁNÍ ČISTÝCH NADPISŮ (BEZ MŘÍŽEK A HVĚZDIČEK)
       s = s.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-amber-300 mt-5 mb-2">$1</h3>');
       s = s.replace(/^## (.*$)/gim, '<h2 class="text-xl font-extrabold text-amber-400 mt-6 mb-2">$1</h2>');
       s = s.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-amber-400 mt-7 mb-3">$1</h1>');
-      
-      // 3. ODSTRANĚNÍ VŠECH HVĚZDIČEK
       s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-100">$1</strong>');
       s = s.replace(/\*(.*?)\*/g, '<em class="text-slate-300 italic">$1</em>');
       s = s.replace(/\*/g, '');
-
-      // 4. ELEGANTNÍ ODRÁŽKY
       s = s.replace(/^\s*[-•]\s+(.*$)/gim, '<div class="flex items-start gap-2.5 my-1.5"><span class="text-amber-400 font-bold">•</span><span class="text-slate-200">$1</span></div>');
-
-      // 5. ODŘÁDKOVÁNÍ
       s = s.replace(/\n\n/g, '<div class="h-3"></div>');
       s = s.replace(/\n/g, '<br>');
       return s;
@@ -349,7 +332,7 @@
         <div class="grid gap-4 mt-8">
           <button onclick="nav('topicSelect', 'uceni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-amber-500/30 flex items-center gap-4 text-left hover:border-amber-500 active:scale-95 transition">
             <span class="text-4xl">📖</span>
-            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Detailní učení, shrnutí, ELI5, rychlokurz i doučovatel.</p></div>
+            <div><h2 class="text-xl font-bold text-amber-400">Učit se</h2><p class="text-slate-400 text-xs mt-0.5">Detailní učení, shrnutí, ELI5 i rychlokurz.</p></div>
           </button>
           <button onclick="nav('topicSelect', 'zkouseni')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-purple-500/30 flex items-center gap-4 text-left hover:border-purple-500 active:scale-95 transition">
             <span class="text-4xl">🎯</span>
@@ -357,12 +340,13 @@
           </button>
           <button onclick="nav('vkladani')" class="p-5 md:p-6 rounded-2xl bg-cardBg border border-emerald-500/30 flex items-center gap-4 text-left hover:border-emerald-500 active:scale-95 transition">
             <span class="text-4xl">📥</span>
-            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI bleskově pozná nadpisy.</p></div>
+            <div><h2 class="text-xl font-bold text-emerald-400">Vložit sešit</h2><p class="text-slate-400 text-xs mt-0.5">Vložit text nebo fotky sešitu – AI vytvoří kapitoly.</p></div>
           </button>
         </div>
       `;
     }
 
+    // --- VÝBĚR PODLE CELÝCH KAPITOL I JEDNOTLIVÝCH NADPISŮ ---
     function renderTopicSelect(targetMode) {
       state.currentMode = targetMode;
       const app = document.getElementById('app');
@@ -377,36 +361,69 @@
         `;
         return;
       }
+      
       let subjectsHtml = '';
       state.subjects.forEach(sub => {
         if (!sub || !sub.topics || sub.topics.length === 0) return;
-        let topicsHtml = '';
-        sub.topics.forEach(top => {
-          if (!top) return;
-          const isChecked = state.selectedTopics.some(t => t && t.id === top.id) ? 'checked' : '';
-          topicsHtml += `
-            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 cursor-pointer active:bg-slate-700 hover:border-slate-500">
-              <input type="checkbox" value="${top.id}" data-sub="${sub.id}" class="w-5 h-5 accent-amber-500 rounded topic-cb" ${isChecked}>
-              <div class="flex-1">
-                <span class="text-sm font-semibold text-slate-100 block">📌 ${top.title || 'Téma'}</span>
-                <span class="text-[10px] text-slate-400 line-clamp-1">${cleanAndFormatText(top.content || '').substring(0, 65)}...</span>
+        
+        // Seskupení témat do kapitol
+        const chapterGroups = {};
+        sub.topics.forEach(t => {
+          const chName = t.chapter || 'Hlavní látka';
+          if (!chapterGroups[chName]) chapterGroups[chName] = [];
+          chapterGroups[chName].push(t);
+        });
+
+        let chaptersHtml = '';
+        Object.keys(chapterGroups).forEach((chName, chIdx) => {
+          const groupTopics = chapterGroups[chName];
+          const allGroupChecked = groupTopics.every(t => state.selectedTopics.some(st => st && st.id === t.id));
+
+          let topicsInChapterHtml = '';
+          groupTopics.forEach(top => {
+            const isChecked = state.selectedTopics.some(t => t && t.id === top.id) ? 'checked' : '';
+            topicsInChapterHtml += `
+              <label class="flex items-center gap-3 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 cursor-pointer active:bg-slate-800 hover:border-slate-700">
+                <input type="checkbox" value="${top.id}" data-sub="${sub.id}" data-chapter="${chName}" class="w-4 h-4 accent-amber-500 rounded topic-cb" ${isChecked} onchange="syncChapterHeader('${sub.id}', '${chIdx}')">
+                <div class="flex-1">
+                  <span class="text-xs font-semibold text-slate-200 block">${top.title || 'Téma'}</span>
+                </div>
+              </label>
+            `;
+          });
+
+          chaptersHtml += `
+            <div class="mb-4 bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80">
+              <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">📁</span>
+                  <span class="font-bold text-xs text-amber-300 uppercase tracking-wider">${chName}</span>
+                </div>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">
+                  <input type="checkbox" id="chHeader_${sub.id}_${chIdx}" class="w-3.5 h-3.5 accent-amber-500 rounded" ${allGroupChecked ? 'checked' : ''} onchange="toggleEntireChapter('${sub.id}', '${chName}', this.checked, '${chIdx}')">
+                  <span>Vybrat celou kapitolu</span>
+                </label>
               </div>
-            </label>
+              <div class="grid gap-1.5 pl-2">${topicsInChapterHtml}</div>
+            </div>
           `;
         });
+
         subjectsHtml += `
-          <div class="mb-5 bg-cardBg p-4 rounded-2xl border border-slate-800">
-            <div class="flex justify-between items-center mb-3">
-              <h3 class="font-bold text-md text-amber-400">${sub.name}</h3>
-              <button onclick="toggleAllInSub('${sub.id}')" class="text-xs text-slate-400 hover:text-slate-200">Vybrat vše</button>
+          <div class="mb-6 bg-cardBg p-4 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
+              <h3 class="font-black text-base text-amber-400">${sub.name}</h3>
+              <button onclick="toggleAllInSub('${sub.id}')" class="text-xs text-slate-400 hover:text-slate-200 bg-slate-800 px-2.5 py-1 rounded">Vybrat úplně vše</button>
             </div>
-            <div class="grid gap-2">${topicsHtml}</div>
+            <div>${chaptersHtml}</div>
           </div>
         `;
       });
+
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
-        <h2 class="text-2xl font-black mb-1">Vyber témata / nadpisy</h2>
+        <h2 class="text-2xl font-black mb-1">Vyber kapitoly a témata</h2>
+        <p class="text-slate-400 text-xs mb-4">Můžeš zaškrtnout celou kapitolu naráz, nebo jen vybrané nadpisy.</p>
         <div class="mt-4">${subjectsHtml}</div>
         <div class="sticky bottom-4 pt-2">
           <button onclick="confirmSelectedTopics()" class="w-full py-4 rounded-xl bg-amber-600 font-bold shadow-lg shadow-amber-600/30 active:scale-98 transition">
@@ -416,15 +433,34 @@
       `;
     }
 
+    // Zaškrtnutí / odškrtnutí celé jedné kapitoly
+    function toggleEntireChapter(subId, chName, isChecked, chIdx) {
+      const cbs = document.querySelectorAll(`.topic-cb[data-sub="${subId}"][data-chapter="${chName}"]`);
+      cbs.forEach(cb => cb.checked = isChecked);
+    }
+
+    function syncChapterHeader(subId, chIdx) {
+      const chHeader = document.getElementById(`chHeader_${subId}_${chIdx}`);
+      if (!chHeader) return;
+      const sub = state.subjects.find(s => s && s.id === subId);
+      if (!sub) return;
+      const chName = chHeader.getAttribute('onchange')?.match(/'([^']+)', this.checked/)?.[1];
+      if (chName) {
+        const cbs = Array.from(document.querySelectorAll(`.topic-cb[data-sub="${subId}"][data-chapter="${chName}"]`));
+        chHeader.checked = cbs.length > 0 && cbs.every(c => c.checked);
+      }
+    }
+
     function toggleAllInSub(subId) {
       const cbs = document.querySelectorAll(`.topic-cb[data-sub="${subId}"]`);
       const allChecked = Array.from(cbs).every(c => c.checked);
       cbs.forEach(c => c.checked = !allChecked);
+      document.querySelectorAll(`[id^="chHeader_${subId}_"]`).forEach(h => h.checked = !allChecked);
     }
 
     function confirmSelectedTopics() {
       const checkedBoxes = document.querySelectorAll('.topic-cb:checked');
-      if (checkedBoxes.length === 0) { alert('Vyber alespoň jedno téma!'); return; }
+      if (checkedBoxes.length === 0) { alert('Vyber alespoň jedno téma nebo kapitolu!'); return; }
       state.selectedTopics = [];
       checkedBoxes.forEach(cb => {
         const subId = cb.getAttribute('data-sub');
@@ -438,10 +474,10 @@
     }
 
     function getCombinedNotes() {
-      return state.selectedTopics.map(t => `Téma: ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
+      return state.selectedTopics.map(t => `Kapitola: ${t.chapter || ''} - ${t.title || 'Látka'}\n${t.content || ''}`).join('\n\n');
     }
 
-    // --- REŽIMY UČENÍ S NOVÝM DETAILNÍM UČENÍM ---
+    // --- REŽIMY UČENÍ S DETAILNÍM UČENÍM ---
     function renderUceniHub() {
       const app = document.getElementById('app');
       app.innerHTML = `
@@ -455,12 +491,12 @@
         </div>
 
         <div class="grid gap-3">
-          <!-- NOVÁ FUNKCE: DETAILNÍ UČENÍ -->
+          <!-- DETAILNÍ UČENÍ: VŠECHNO + RÁMEČKY A PAMĚŤ -->
           <button onclick="runAiStudy('detailni')" class="p-4 bg-gradient-to-r from-amber-950/40 to-cardBg border border-amber-500/50 rounded-xl flex items-center gap-3 text-left hover:border-amber-400 transition shadow-lg">
             <span class="text-3xl">🔬</span>
             <div>
               <h3 class="font-bold text-amber-300">Detailní učení (Vše + Rámečky & Mnemotechniky)</h3>
-              <p class="text-xs text-slate-300 mt-0.5">Kompletní hloubkový výklad se všemi fakty, souvislostmi v rámečcích a mentálními triky pro zapamatování.</p>
+              <p class="text-xs text-slate-300 mt-0.5">Kompletní hloubkový výklad se všemi fakty, souvislostmi v rámečcích a triky na zapamatování.</p>
             </div>
           </button>
 
@@ -567,6 +603,19 @@
         cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
         try { parsed = JSON.parse(cleaned); } catch(err) { return []; }
       }
+      
+      // Pokud AI vrátila strukturu s kapitolami
+      if (parsed && parsed.chapters && Array.isArray(parsed.chapters)) {
+        const flat = [];
+        parsed.chapters.forEach(ch => {
+          const chName = ch.chapter || 'Hlavní látka';
+          if (Array.isArray(ch.topics)) {
+            ch.topics.forEach(t => flat.push({ chapter: chName, title: t.title, content: t.content }));
+          }
+        });
+        if (flat.length > 0) return flat;
+      }
+
       if (Array.isArray(parsed)) return parsed;
       if (parsed && typeof parsed === 'object') {
         for (let k of Object.keys(parsed)) {
@@ -594,6 +643,7 @@
       return chunks;
     }
 
+    // --- VKLÁDÁNÍ TEXTU S ROZDĚLENÍM DO KAPITOL A TÉMAT ---
     async function processFullTextNotebook() {
       const subName = getResolvedSubjectName();
       const textArea = document.getElementById('inputTextFull');
@@ -608,10 +658,10 @@
       const allExtractedTopics = [];
 
       for (let i = 0; i < chunks.length; i++) {
-        if (btn) btn.innerText = `⚡ Zpracovávám sešit: Část ${i + 1} z ${chunks.length}...`;
+        if (btn) btn.innerText = `⚡ Tvořím kapitoly: Část ${i + 1} z ${chunks.length}...`;
         
         const messages = [
-          { role: "system", content: "Rozděl zadaný text sešitu na témata podle hlavních nadpisů. Vrať VÝHRADNĚ platný JSON formát bez dalších slov okolo: {\"topics\": [{\"title\":\"Název nadpisu\",\"content\":\"text poznámek...\"}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
+          { role: "system", content: "Jsi asistent pro studium. Rozděl zadaný text sešitu do logických HLAVNÍCH KAPITOL a PODTÉMAT. Vrať VÝHRADNĚ platný JSON ve formátu: {\"chapters\": [{\"chapter\": \"Název hlavní kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"text poznámek...\"}]}]}. Nikdy nepoužívej hvězdičky pro nadpisy." },
           { role: "user", content: `Předmět: ${subName}\nČást ${i + 1}/${chunks.length}:\n\n${chunks[i]}` }
         ];
 
@@ -619,7 +669,7 @@
           const { text: raw } = await executeGroqChat(messages);
           const chunkTopics = extractTopicsList(raw);
           chunkTopics.forEach(t => allExtractedTopics.push(t));
-          if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 1000));
+          if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 800));
         } catch (err) {
           console.error('Chyba v části ' + (i + 1), err);
         }
@@ -637,13 +687,45 @@
 
       allExtractedTopics.forEach(t => {
         if (t && (t.title || t.content)) {
-          sub.topics.push({ id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: String(t.title || 'Kapitola').trim(), content: String(t.content || '').trim() });
+          sub.topics.push({
+            id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            chapter: String(t.chapter || 'Hlavní látka').trim(),
+            title: String(t.title || 'Téma').trim(),
+            content: String(t.content || '').trim()
+          });
         }
       });
       
       await pushToCloud();
-      alert(`🎉 Hotovo! Sešit "${subName}" byl bezpečně rozdělen na ${allExtractedTopics.length} kapitol.`);
+      alert(`🎉 Hotovo! Sešit "${subName}" byl rozdělen do přehledných kapitol a podtémat.`);
       nav('home');
+    }
+
+    // --- BEZPEČNÁ KOMPRESE FOTEK PŘÍMO NA ZAŘÍZENÍ (ŘEŠÍ CHYBU UNDEFINED) ---
+    function compressImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            const maxDimension = 1200;
+            if (w > maxDimension || h > maxDimension) {
+              if (w > h) { h = Math.round((h * maxDimension) / w); w = maxDimension; }
+              else { w = Math.round((w * maxDimension) / h); h = maxDimension; }
+            }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.72));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     async function handleMultipleImages(input) {
@@ -651,15 +733,16 @@
       const subName = getResolvedSubjectName();
       if (!subName) { alert('Nejprve vyber předmět!'); return; }
       const count = input.files.length;
+      
       const app = document.getElementById('app');
-      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><h2 class="text-xl font-bold mb-1">Čtu fotky sešitu (${count} fotek)...</h2></div>`;
+      app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><h2 class="text-xl font-bold mb-1">Zpracovávám a čtu ${count} fotek...</h2><p class="text-xs text-slate-400 mt-1">Automaticky komprimuji a analyzuji text.</p></div>`;
 
       try {
-        const userContents = [{ type: "text", text: `Předmět: ${subName}. Přečti sešit, najdi nadpisy a vytvoř JSON: {\"topics\": [{\"title\": \"...\", \"content\": \"...\"}]}` }];
+        const userContents = [{ type: "text", text: `Předmět: ${subName}. Přečti sešit, najdi hlavní kapitoly a podtémata. Vrať JSON: {\"chapters\": [{\"chapter\": \"Název kapitoly\", \"topics\": [{\"title\": \"Název podtématu\", \"content\": \"obsah...\"}]}]}` }];
+        
         for (let i = 0; i < input.files.length; i++) {
-          const file = input.files[i];
-          const b64 = await readFileAsBase64(file);
-          userContents.push({ type: "image_url", image_url: { url: `data:${file.type};base64,${b64}` } });
+          const compressedDataUrl = await compressImageFile(input.files[i]);
+          userContents.push({ type: "image_url", image_url: { url: compressedDataUrl } });
         }
 
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -667,7 +750,12 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey.trim()}` },
           body: JSON.stringify({ model: 'qwen/qwen3.8-27b', messages: [{ role: "user", content: userContents }] })
         });
+
         const data = await res.json();
+        if (!res.ok || !data.choices || !data.choices[0]) {
+          throw new Error(data.error?.message || `Chyba při čtení fotek (${res.status})`);
+        }
+
         const raw = data.choices[0].message.content;
         const topicsList = extractTopicsList(raw);
         
@@ -677,43 +765,40 @@
 
         topicsList.forEach(t => {
           if (t && (t.title || t.content)) {
-            sub.topics.push({ id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), title: String(t.title || 'Kapitola').trim(), content: String(t.content || '').trim() });
+            sub.topics.push({
+              id: 'top_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+              chapter: String(t.chapter || 'Hlavní látka').trim(),
+              title: String(t.title || 'Téma').trim(),
+              content: String(t.content || '').trim()
+            });
           }
         });
+        
         await pushToCloud();
-        alert(`🎉 Hotovo! Sešit byl rozdělen na ${topicsList.length} kapitol.`);
+        alert(`🎉 Hotovo! Fotky byly přečteny a rozděleny do kapitol.`);
         nav('home');
       } catch (err) {
-        alert('CHYBA: ' + err.message);
+        alert('Chyba při zpracování fotek: ' + err.message);
         nav('vkladani');
       }
     }
 
-    function readFileAsBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // --- UČENÍ (VČETNĚ DETAILNÍHO UČENÍ S RÁMEČKY A PAMĚŤOVÝMI TIPY) ---
+    // --- UČENÍ (DETAILNÍ UČENÍ S RÁMEČKY) ---
     async function runAiStudy(type) {
       const customNote = document.getElementById('customInstructionInput')?.value.trim() || '';
       const app = document.getElementById('app');
       app.innerHTML = `<div class="text-center py-20"><div class="animate-spin text-4xl mb-4">⚡</div><p class="text-sm text-slate-400">Groq generuje materiály...</p></div>`;
       
-      let sys = "Jsi špičkový osobní lektor a pedagog. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
+      let sys = "Jsi špičkový osobní lektor. DŮLEŽITÉ: Nikdy nepoužívej hvězdičky pro nadpisy. Piš čistý a srozumitelný text s jasnými odrážkami.";
       let prompt = `Podklady z vybraných kapitol:\n${getCombinedNotes()}\n\n`;
 
       if (type === 'detailni') {
-        prompt += `VYTVOŘ MAXIMÁLNĚ DETAILNÍ A HLOUBKOVÝ STUDIJNÍ MATERIÁL. Nevynechej žádný fakt, definici ani souvislost.
+        prompt += `VYTVOŘ MAXIMÁLNĚ DETAILNÍ A HLOUBKOVÝ VÝKLAD LÁTKY. Nevynechej žádný fakt ani souvislost.
 POVINNÁ STRUKTURA:
-1. Velmi podrobný rozbor látky od začátku do konce.
-2. V textu pravidelně vytvářej dva typy speciálních rámečků přesně v tomto formátu závorek:
-   [EXTRA: Zde napiš dodatečné zajímavé informace, historický/vědecký kontext a hlubší souvislosti, které v sešitu nebyly, ale pomáhají pochopit podstatu.]
-   [TIP NA PAMĚŤ: Zde napiš konkrétní mnemotechnickou pomůcku, asociaci, vtipný příměr nebo myšlenkový trik, jak si tento pojem, letopočet nebo vzorec natrvalo zapamatovat.]`;
+1. Podrobné rozpracování látky.
+2. V textu pravidelně vytvářej tyto dva typy rámečků přesně v těchto závorkách:
+   [EXTRA: Dodatečné zajímavé informace, hlubší vědecký/historický kontext a souvislosti, které pomohou látku pochopit.]
+   [TIP NA PAMĚŤ: Konkrétní mnemotechnická pomůcka, asociace nebo myšlenkový trik, jak si tento pojem, letopočet nebo vzorec natrvalo zapamatovat.]`;
       } else if (type === 'shrnuti') {
         prompt += "Vytvoř jasné shrnutí této látky v odrážkách bez zbytečné omáčky.";
       } else if (type === 'eli5') {
@@ -950,7 +1035,7 @@ POVINNÁ STRUKTURA:
       app.innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black">Vložit celý sešit</h2>
-        <p class="text-slate-400 text-xs mb-5">AI sama rozdělí i obří sešit na jednotlivé kapitoly.</p>
+        <p class="text-slate-400 text-xs mb-5">AI sama rozdělí i obří sešit na kapitoly a podtémata.</p>
         <div class="space-y-4 bg-cardBg p-5 rounded-2xl border border-slate-800 shadow-xl">
           <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">1. Předmět</label>
@@ -970,6 +1055,7 @@ POVINNÁ STRUKTURA:
             <label class="flex flex-col items-center justify-center p-5 bg-slate-800/80 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-400 transition">
               <span class="text-3xl">📸</span>
               <span class="text-sm font-bold mt-2 text-amber-400">Vybrat fotky sešitu</span>
+              <span class="text-[10px] text-slate-400 mt-1">Automaticky komprimováno proti chybám</span>
               <input id="multiImagesInput" type="file" accept="image/*" multiple class="hidden" onchange="handleMultipleImages(this)">
             </label>
           </div>
@@ -977,7 +1063,7 @@ POVINNÁ STRUKTURA:
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Možnost B: Vložit text z Apple Notes</label>
             <textarea id="inputTextFull" rows="8" placeholder="Sem vlož kompletní sešit se všemi nadpisy..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-slate-200"></textarea>
             <button onclick="processFullTextNotebook()" id="saveTextBtn" class="w-full mt-3 py-4 bg-emerald-600 font-bold rounded-xl active:scale-98 transition shadow-lg shadow-emerald-600/30">
-              ⚡ Rozdělit sešit na témata
+              ⚡ Rozdělit sešit na kapitoly
             </button>
           </div>
         </div>
@@ -1011,7 +1097,7 @@ POVINNÁ STRUKTURA:
           <div class="space-y-1">
             ${(sub.topics || []).map(t => `
               <div class="flex justify-between text-xs p-2 bg-slate-800 rounded">
-                <span>📌 ${t.title || 'Kapitola'}</span>
+                <span>📁 ${t.chapter || ''} / 📌 ${t.title || 'Kapitola'}</span>
                 <button onclick="deleteTopic('${sub.id}', '${t.id}')" class="text-red-400">Odstranit</button>
               </div>
             `).join('')}
@@ -1037,7 +1123,7 @@ POVINNÁ STRUKTURA:
       document.getElementById('app').innerHTML = `
         <button onclick="nav('home')" class="text-xs text-slate-400 mb-3">← Domů</button>
         <h2 class="text-2xl font-black mb-1">Nastavení</h2>
-        <p class="text-xs text-slate-400 mb-4">StudyApp v22.0 Masterpiece (Dalí Edition)</p>
+        <p class="text-xs text-slate-400 mb-4">StudyApp v23.0 Dalí Pro Edition</p>
         
         <div class="bg-cardBg p-4 rounded-xl border border-slate-800 space-y-3 mb-5">
           <h3 class="text-xs font-bold text-slate-400 uppercase">Synchronizace (PC ↔ iPad ↔ iPhone)</h3>
